@@ -1,0 +1,72 @@
+## OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.history/
+
+## Cursor (local IDE state; commit shared rules if you add them)
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+
+## Node / package managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+
+## Angular
+.angular/cache
+dist/
+tmp/
+out-tsc/
+bazel-out/
+.sass-cache/
+connect.lock
+libpeerconnection.log
+testem.log
+typings/
+
+## TypeScript
+*.tsbuildinfo
+
+## Tests & coverage
+coverage/
+*.lcov
+junit.xml
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+## Build & tooling
+.cache/
+.parcel-cache/
+.nx/cache
+.turbo
+
+## Secrets and local config
+.env
+.env.*
+!.env.example
+**/environment*.local.ts
+secrets.json
+*.pem
+*.key
+
+## Misc
+*.swp
+*~
+*.bak
+*.log
