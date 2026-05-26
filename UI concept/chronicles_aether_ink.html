@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronicles — Modern Fantasy & Sci-Fi Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #070b14;
+            --surface: rgba(16, 24, 45, 0.6);
+            --primary: #e2c97f;
+            --secondary: #8b9dc3;
+            --accent: #c77dff;
+            --text: #f0e6d3;
+            --muted: #6b7a9c;
+            --glow: rgba(226, 201, 127, 0.15);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --transition-speed: 0.6s;
+            --border-radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 32px 64px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            text-shadow: 0 0 40px rgba(226, 201, 127, 0.3);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 48px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            position: relative;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .nav-links a:hover { color: var(--primary); }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 1.5px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        .nav-links a:hover::after { width: 100%; }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 92vh;
+            display: flex;
+            align-items: center;
+            padding: 0 64px;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/632bbbec09a4fd8e33e19ef0f398239abcbe8838.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            opacity: 0.45;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+            transition: transform 8s ease;
+        }
+
+        .hero:hover .hero-bg { transform: scale(1.05); }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 70% 50%, transparent 0%, var(--bg) 70%);
+            z-index: 1;
+        }
+
+        .hero-deco {
+            position: absolute;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(226,201,127,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 1;
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateY(-50%) scale(1); opacity: 0.6; }
+            50% { transform: translateY(-50%) scale(1.1); opacity: 0.9; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 720px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(226, 201, 127, 0.08);
+            border: 1px solid rgba(226, 201, 127, 0.3);
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border-radius: 100px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .hero h1 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(3.2rem, 7vw, 6rem);
+            font-weight: 700;
+            line-height: 1.05;
+            margin-bottom: 28px;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+
+        .hero h1 em {
+            color: var(--primary);
+            font-style: normal;
+            text-shadow: 0 0 60px rgba(226, 201, 127, 0.4);
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: var(--muted);
+            margin-bottom: 48px;
+            max-width: 560px;
+            font-weight: 300;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 18px 36px;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg);
+            box-shadow: 0 4px 30px rgba(226, 201, 127, 0.25);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 50px rgba(226, 201, 127, 0.4); 
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1.5px solid rgba(255,255,255,0.15);
+        }
+        .btn-secondary:hover { 
+            border-color: var(--primary); 
+            color: var(--primary); 
+            background: rgba(226, 201, 127, 0.05);
+        }
+
+        /* Section Styling */
+        .section {
+            padding: 120px 64px;
+            position: relative;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 72px;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2.2rem, 4vw, 3.2rem);
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.15;
+            letter-spacing: 0.04em;
+        }
+
+        .section-title span {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 1.05rem;
+            max-width: 420px;
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* Categories Strip */
+        .categories {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+            scrollbar-width: none;
+        }
+        .categories::-webkit-scrollbar { display: none; }
+
+        .category-pill {
+            flex-shrink: 0;
+            padding: 14px 28px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.02em;
+        }
+
+        .category-pill:hover, .category-pill.active {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+            box-shadow: 0 4px 24px var(--glow);
+        }
+
+        /* Featured Banner */
+        .featured-banner {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            margin: 48px 0;
+            min-height: 420px;
+            display: flex;
+            align-items: center;
+            padding: 56px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .featured-banner-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://kimi-web-img.moonshot.cn/img/wallpapersok.com/d7adfa8227f805e9ff8c287de2a755f3d6b6c7eb.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.35;
+            transition: transform 6s ease;
+        }
+
+        .featured-banner:hover .featured-banner-bg { transform: scale(1.08); }
+
+        .featured-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, var(--bg) 0%, rgba(7,11,20,0.8) 40%, transparent 100%);
+            z-index: 1;
+        }
+
+        .featured-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, var(--bg) 0%, transparent 40%);
+            z-index: 1;
+        }
+
+        .featured-content {
+            position: relative;
+            z-index: 2;
+            max-width: 520px;
+        }
+
+        .featured-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .featured-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 3.5vw, 2.8rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            letter-spacing: 0.03em;
+        }
+
+        .featured-desc {
+            color: var(--muted);
+            line-height: 1.8;
+            margin-bottom: 32px;
+            font-size: 1.05rem;
+            font-weight: 300;
+        }
+
+        /* Book Grid */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 36px;
+        }
+
+        .book-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(20px);
+        }
+
+        .book-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--border-radius);
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(226,201,127,0.2), transparent 50%, rgba(199,125,255,0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .book-card:hover::before { opacity: 1; }
+
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 40px rgba(226,201,127,0.08);
+            border-color: rgba(226,201,127,0.15);
+        }
+
+        .book-cover {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s ease;
+        }
+
+        .book-card:hover .book-cover { transform: scale(1.06); }
+
+        .book-info {
+            padding: 28px;
+        }
+
+        .book-genre {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .book-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            line-height: 1.35;
+            letter-spacing: 0.02em;
+        }
+
+        .book-author {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .book-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .rating {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .status {
+            font-size: 0.7rem;
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: rgba(255,255,255,0.04);
+            color: var(--muted);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        footer {
+            padding: 80px 64px 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 80px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 64px;
+            margin-bottom: 64px;
+        }
+
+        .footer-brand {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            letter-spacing: 0.06em;
+        }
+
+        .footer-desc {
+            color: var(--muted);
+            line-height: 1.8;
+            max-width: 320px;
+            font-weight: 300;
+        }
+
+        .footer-col h4 {
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 24px;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
+        .footer-col a {
+            display: block;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 14px;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            font-weight: 300;
+        }
+        .footer-col a:hover { color: var(--primary); }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-weight: 300;
+        }
+
+        /* Starfield effect */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(226,201,127,0.3), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(139,157,195,0.2), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(2px 2px at 160px 120px, rgba(226,201,127,0.2), transparent),
+                radial-gradient(1px 1px at 230px 80px, rgba(255,255,255,0.15), transparent),
+                radial-gradient(2px 2px at 300px 200px, rgba(139,157,195,0.15), transparent),
+                radial-gradient(1px 1px at 400px 50px, rgba(255,255,255,0.1), transparent),
+                radial-gradient(2px 2px at 500px 300px, rgba(226,201,127,0.15), transparent);
+            background-size: 550px 550px;
+            animation: twinkle 8s ease-in-out infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            opacity: 0;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+        .delay-1 { animation-delay: 0.15s; }
+        .delay-2 { animation-delay: 0.3s; }
+        .delay-3 { animation-delay: 0.45s; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-deco { width: 300px; height: 300px; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: 48px; }
+            nav, .hero, .section { padding-left: 32px; padding-right: 32px; }
+        }
+
+        @media (max-width: 768px) {
+            .hero-deco { display: none; }
+            .nav-links { display: none; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .book-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+            .featured-banner { padding: 32px; min-height: 320px; }
+            .hero { min-height: 80vh; padding-top: 40px; padding-bottom: 40px; }
+            .section { padding: 80px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="logo">Chronicles</a>
+        <ul class="nav-links">
+            <li><a href="#">Library</a></li>
+            <li><a href="#">Collections</a></li>
+            <li><a href="#">Authors</a></li>
+            <li><a href="#">Community</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-deco"></div>
+        <div class="hero-content">
+            <div class="hero-tag animate-in">Curated Worlds Await</div>
+            <h1 class="animate-in delay-1">Where <em>Imagination</em> Breathes</h1>
+            <p class="animate-in delay-2">Discover modern fantasy and science fiction novels that challenge reality, ignite wonder, and wrap you in narratives that feel like coming home to somewhere you've never been.</p>
+            <div class="cta-group animate-in delay-3">
+                <a href="#" class="btn btn-primary">Explore Library</a>
+                <a href="#" class="btn btn-secondary">View Collections</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Browse by <span>Realm</span></h2>
+            </div>
+        </div>
+        <div class="categories">
+            <button class="category-pill active">All Realms</button>
+            <button class="category-pill">Hard Sci-Fi</button>
+            <button class="category-pill">Space Opera</button>
+            <button class="category-pill">Epic Fantasy</button>
+            <button class="category-pill">Urban Fantasy</button>
+            <button class="category-pill">Cyberpunk</button>
+            <button class="category-pill">Cosmic Horror</button>
+            <button class="category-pill">Solarpunk</button>
+        </div>
+    </section>
+
+    <!-- Featured Banner -->
+    <section class="section" style="padding-top: 0;">
+        <div class="featured-banner">
+            <div class="featured-banner-bg"></div>
+            <div class="featured-content">
+                <div class="featured-label">Editor's Choice</div>
+                <h3 class="featured-title">The Gravity of Lost Things</h3>
+                <p class="featured-desc">A sweeping space opera about a librarian aboard a generation ship who discovers that the colony's historical archives have been systematically altered for centuries.</p>
+                <a href="#" class="btn btn-primary">Read Preview</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Arrivals -->
+    <section class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Fresh <span>Arrivals</span></h2>
+                <p class="section-subtitle">Newly added worlds ready for your discovery this week.</p>
+            </div>
+            <a href="#" class="btn btn-secondary">View All</a>
+        </div>
+        <div class="book-grid">
+            <div class="book-card">
+                <img src="https://kimi-web-img.moonshot.cn/img/miblart.com/37d83dfd8c0fa473d9c512d6b2129921f477047a" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Dark Fantasy</div>
+                    <h3 class="book-title">Quantum Roots</h3>
+                    <div class="book-author">by Elara Vance</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.9</span>
+                        <span class="status">New</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://kimi-web-img.moonshot.cn/img/miblart.com/f51818ff94372e9c599de37b92b2432bd70da948" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Epic Fantasy</div>
+                    <h3 class="book-title">The Glass Thief</h3>
+                    <div class="book-author">by Marcus Chen</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.8</span>
+                        <span class="status">Trending</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://kimi-web-img.moonshot.cn/img/w0.peakpx.com/52141293818fc5201bd70c4ae2f9a2b48625ccf5.jpg" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Space Opera</div>
+                    <h3 class="book-title">Silicon Saints</h3>
+                    <div class="book-author">by Nova Kincaid</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.7</span>
+                        <span class="status">New</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://kimi-web-img.moonshot.cn/img/w0.peakpx.com/f0e8cd736474e1b55a341ed625c4f51a32cf422a.jpg" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Hard Sci-Fi</div>
+                    <h3 class="book-title">Beneath Distant Suns</h3>
+                    <div class="book-author">by Idris Okonkwo</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.9</span>
+                        <span class="status">Award Winner</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&h=900&fit=crop&q=80" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Urban Fantasy</div>
+                    <h3 class="book-title">Midnight Boroughs</h3>
+                    <div class="book-author">by Selene Park</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.6</span>
+                        <span class="status">New</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=600&h=900&fit=crop&q=80" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Solarpunk</div>
+                    <h3 class="book-title">Verdant Machines</h3>
+                    <div class="book-author">by Theo Brennan</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.8</span>
+                        <span class="status">Staff Pick</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trending -->
+    <section class="section" style="padding-top: 0;">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Trending <span>Now</span></h2>
+                <p class="section-subtitle">The stories captivating readers across the galaxy this month.</p>
+            </div>
+        </div>
+        <div class="book-grid">
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=600&h=900&fit=crop&q=80" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Cosmic Horror</div>
+                    <h3 class="book-title">The Hollow Between Stars</h3>
+                    <div class="book-author">by Amara Singh</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.9</span>
+                        <span class="status">Hot</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1557683316-973673baf926?w=600&h=900&fit=crop&q=80" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Hard Sci-Fi</div>
+                    <h3 class="book-title">Entropy's Children</h3>
+                    <div class="book-author">by Lena Volkov</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.7</span>
+                        <span class="status">Hot</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=600&h=900&fit=crop&q=80" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Epic Fantasy</div>
+                    <h3 class="book-title">A Crown of Thunder</h3>
+                    <div class="book-author">by Julian Reyes</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.8</span>
+                        <span class="status">Bestseller</span>
+                    </div>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&h=900&fit=crop&q=80" alt="Book Cover" class="book-cover">
+                <div class="book-info">
+                    <div class="book-genre">Cyberpunk</div>
+                    <h3 class="book-title">Neon Psalm</h3>
+                    <div class="book-author">by Kira Tanaka</div>
+                    <div class="book-meta">
+                        <span class="rating">★ 4.6</span>
+                        <span class="status">Hot</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div>
+                <div class="footer-brand">Chronicles</div>
+                <p class="footer-desc">A curated sanctuary for modern fantasy and science fiction. We believe stories are portals, and every reader deserves a world that feels like home.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="#">New Releases</a>
+                <a href="#">Bestsellers</a>
+                <a href="#">Hidden Gems</a>
+                <a href="#">Author Interviews</a>
+            </div>
+            <div class="footer-col">
+                <h4>Community</h4>
+                <a href="#">Reading Circles</a>
+                <a href="#">Reviews</a>
+                <a href="#">Forums</a>
+                <a href="#">Events</a>
+            </div>
+            <div class="footer-col">
+                <h4>Account</h4>
+                <a href="#">My Library</a>
+                <a href="#">Wishlist</a>
+                <a href="#">Settings</a>
+                <a href="#">Support</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span> 2026 Chronicles Library. All worlds reserved.</span>
+            <span>Crafted for dreamers and stargazers.</span>
+        </div>
+    </footer>
+
+    <script>
+        // Category Pill Toggle
+        const pills = document.querySelectorAll('.category-pill');
+        pills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                pills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
