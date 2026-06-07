@@ -26,14 +26,26 @@
     <a routerLink="/realms" class="btn btn-secondary">View All Realms</a>
   </div>
   <div class="categories">
-    <button class="category-pill active" type="button">All Realms</button>
-    <button class="category-pill" type="button">Hard Sci-Fi</button>
-    <button class="category-pill" type="button">Space Opera</button>
-    <button class="category-pill" type="button">Epic Fantasy</button>
-    <button class="category-pill" type="button">Urban Fantasy</button>
-    <button class="category-pill" type="button">Cyberpunk</button>
-    <button class="category-pill" type="button">Cosmic Horror</button>
-    <button class="category-pill" type="button">Solarpunk</button>
+    @for (pill of realmPills; track pill.label) {
+      @if (pill.slug) {
+        <a
+          [routerLink]="['/realms', pill.slug]"
+          routerLinkActive="active"
+          class="category-pill"
+        >
+          {{ pill.label }}
+        </a>
+      } @else {
+        <a
+          routerLink="/realms"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="category-pill"
+        >
+          {{ pill.label }}
+        </a>
+      }
+    }
   </div>
 </section>
 

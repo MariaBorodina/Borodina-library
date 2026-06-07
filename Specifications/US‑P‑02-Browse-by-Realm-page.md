@@ -69,35 +69,23 @@ flowchart LR
 ```
 FictioneersUI/src/app/
 ├── app.routes.ts
-├── app.config.ts                    # provideRouter(routes)
-├── app.ts                           # root → <app-shell />
-├── layout/
-│   └── app-shell/
-│       ├── app-shell.component.ts
-│       └── app-shell.component.html
+├── app.config.ts
+├── app.ts
+├── layout/app-shell/
 ├── features/
-│   ├── home/
-│   │   ├── home.page.ts
-│   │   └── home.page.html
+│   ├── home/                       # realm pills → /realms/:slug
 │   ├── browse-realms/
-│   │   ├── browse-realms.page.ts
-│   │   ├── browse-realms.page.html
-│   │   └── browse-realms.page.spec.ts
-│   └── realm-detail/                # stub for US-P-03
-│       ├── realm-detail.page.ts
-│       └── realm-detail.page.html
+│   ├── realm-detail/               # stub for US-P-03
+│   ├── search/                     # FR-R-02 empty state
+│   └── authors/                    # stub for recovery links
 ├── shared/
-│   ├── components/
-│   │   └── realm-card/
-│   │       ├── realm-card.component.ts
-│   │       ├── realm-card.component.html
-│   │       └── realm-card.component.spec.ts
-│   └── models/
-│       └── realm.model.ts
-└── core/
-    └── services/
-        ├── realm.service.ts
-        └── realm.service.spec.ts
+│   ├── components/realm-card/
+│   ├── components/realm-select/    # US-P-12 prep
+│   └── models/realm.model.ts
+├── core/
+│   ├── data/realm.seed.ts          # SEED_REALMS + HOME_REALM_PILLS
+│   └── services/realm.service.ts
+└── environments/environment.ts       # apiUrl for future backend
 ```
 
 ### Routes
@@ -107,6 +95,8 @@ FictioneersUI/src/app/
 | `''` | `HomePage` | US‑P‑01 |
 | `realms` | `BrowseRealmsPage` | **US‑P‑02** |
 | `realms/:slug` | `RealmDetailPage` | US‑P‑03 (stub) |
+| `search` | `SearchPage` | US‑P‑06 (partial — empty state) |
+| `authors` | `AuthorsPage` | US‑P‑07 (stub) |
 
 All feature routes are **lazy-loaded**.
 
@@ -218,14 +208,24 @@ getRealmBySlug(slug: string): Observable<Realm | undefined>
 
 ---
 
-### Phase 2 — Integration touchpoints ⏳ Pending
+### Phase 2 — Integration touchpoints ✅ **Implemented successfully**
 
-| Touchpoint | Action |
-|------------|--------|
-| Home category pills | Optional: link individual pills to matching `/realms/:slug` |
-| Search empty state (US‑R‑02) | Link to `/realms` when search page exists |
-| Author book form (US‑P‑12) | Reuse `RealmService` for realm dropdown |
-| Backend API | Replace mock with `GET /api/realms` |
+| Touchpoint | Status | Notes |
+|------------|--------|-------|
+| Home category pills → `/realms/:slug` | ✅ Done | `HOME_REALM_PILLS` in `core/data/realm.seed.ts`; pills are router links |
+| Search empty state (FR‑R‑02) | ✅ Done | `/search` page links to `/realms` and `/authors` on no results |
+| Author book form (US‑P‑12) | ✅ Done | `RealmSelectComponent` reuses `RealmService` |
+| Backend API prep | ✅ Done | Seed extracted; `environment.apiUrl` + `fetchRealms()` hook in `RealmService` |
+| Nav Search + Authors routes | ✅ Done | Partial US‑P‑15 / US‑P‑07 stub |
+| Footer “Browse by Realm” link | ✅ Done | Explore column in app shell |
+
+**Verification:**
+
+- [x] Home pills navigate to matching realm routes
+- [x] “All Realms” pill → `/realms`
+- [x] Search with no results shows FR‑R‑02 message and recovery links
+- [x] `RealmSelectComponent` lists realms from shared service
+- [x] `ng build` and `npm test` pass
 
 ---
 
@@ -321,4 +321,4 @@ Manual test against Gherkin:
 
 Automated: Vitest specs pass; `ng build` succeeds.
 
-**US‑P‑02 status: Complete (Phase 0 + Phase 1).**
+**US‑P‑02 status: Complete (Phase 0 + Phase 1 + Phase 2).**

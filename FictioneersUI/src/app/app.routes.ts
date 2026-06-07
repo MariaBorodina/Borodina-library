@@ -15,4 +15,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/realm-detail/realm-detail.page').then((m) => m.RealmDetailPage),
   },
+  {
+    path: 'search',
+    loadComponent: () => import('./features/search/search.page').then((m) => m.SearchPage),
+  },
+  {
+    path: 'authors',
+    loadComponent: () => import('./features/authors/authors.page').then((m) => m.AuthorsPage),
+  },
 ];

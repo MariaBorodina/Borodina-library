@@ -5,9 +5,10 @@
   <ul class="nav-links">
     <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a></li>
     <li><a routerLink="/realms" routerLinkActive="active">Browse by Realm</a></li>
+    <li><a routerLink="/search" routerLinkActive="active">Search</a></li>
     <li><a href="#">Library</a></li>
     <li><a href="#">Collections</a></li>
-    <li><a href="#">Authors</a></li>
+    <li><a routerLink="/authors" routerLinkActive="active">Authors</a></li>
     <li><a href="#">Community</a></li>
   </ul>
 </nav>
@@ -25,6 +26,7 @@
     </div>
     <div class="footer-col">
       <h4>Explore</h4>
+      <a routerLink="/realms">Browse by Realm</a>
       <a href="#">New Releases</a>
       <a href="#">Bestsellers</a>
       <a href="#">Hidden Gems</a>

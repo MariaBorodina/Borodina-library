@@ -1,0 +1,32 @@
+<section class="section">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Search the <span>Library</span></h1>
+      <p class="section-subtitle">Find books by title, author, or keyword.</p>
+    </div>
+  </div>
+
+  <form class="search-form" (ngSubmit)="search($event)">
+    <input
+      class="search-form__input"
+      type="search"
+      name="query"
+      placeholder="Enter keywords…"
+      [(ngModel)]="query"
+      aria-label="Search keywords"
+    />
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+
+  @if (searched) {
+    @if (results.length === 0) {
+      <div class="search-empty" role="status">
+        <p class="search-empty__message">No books found. Try different keywords.</p>
+        <div class="search-empty__links">
+          <a routerLink="/realms" class="btn btn-secondary">Browse by Realm</a>
+          <a routerLink="/authors" class="btn btn-secondary">Authors</a>
+        </div>
+      </div>
+    }
+  }
+</section>
