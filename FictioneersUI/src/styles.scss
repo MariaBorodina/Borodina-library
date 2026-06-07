@@ -42,7 +42,8 @@
       content: '';
     }
 
-    &:hover {
+    &:hover,
+    &.active {
       @apply text-primary;
 
       &::after {
@@ -329,5 +330,90 @@
 
   .delay-3 {
     animation-delay: 0.45s;
+  }
+
+  .realm-grid {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-9 max-[768px]:grid-cols-1 max-[768px]:gap-5;
+  }
+
+  .realm-card {
+    @apply relative block min-h-[180px] cursor-pointer overflow-hidden rounded-card border border-white/[0.06] bg-card-bg no-underline backdrop-blur-[20px] transition-all duration-400 ease-in-out;
+
+    &::before {
+      @apply pointer-events-none absolute inset-0 z-[2] rounded-card p-px opacity-0 transition-opacity duration-400 ease-in-out;
+      content: '';
+      background: linear-gradient(
+        135deg,
+        rgba(226, 201, 127, 0.25),
+        transparent 50%,
+        rgba(199, 125, 255, 0.12)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    &:hover::before,
+    &:focus-visible::before {
+      @apply opacity-100;
+    }
+
+    &:hover {
+      @apply -translate-y-2.5 border-primary/15 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_40px_rgba(226,201,127,0.08)];
+    }
+
+    &:focus-visible {
+      @apply outline-2 outline-offset-4 outline-primary;
+    }
+  }
+
+  .realm-card__glow {
+    @apply pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-40 blur-[40px];
+    background: radial-gradient(circle, rgba(226, 201, 127, 0.2) 0%, transparent 70%);
+  }
+
+  .realm-card__content {
+    @apply relative z-[1] flex h-full flex-col p-8;
+  }
+
+  .realm-card__name {
+    @apply mb-3 font-serif text-[1.35rem] font-semibold leading-[1.3] tracking-[0.02em] text-text;
+  }
+
+  .realm-card__description {
+    @apply mb-5 flex-1 text-[0.95rem] font-light leading-[1.7] text-muted;
+  }
+
+  .realm-card__count {
+    @apply mt-auto inline-block w-fit rounded-pill bg-white/[0.04] px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] text-secondary;
+  }
+
+  .realm-card--skeleton {
+    @apply min-h-[180px] animate-pulse cursor-default border-white/[0.04] bg-white/[0.03];
+
+    &:hover {
+      @apply translate-y-0 border-white/[0.04] shadow-none;
+    }
+  }
+
+  .realm-detail__back {
+    @apply mb-6 inline-block text-[0.85rem] font-medium uppercase tracking-[0.08em] text-muted no-underline transition-colors duration-300;
+
+    &:hover {
+      @apply text-primary;
+    }
+  }
+
+  .realm-detail__placeholder {
+    @apply rounded-card border border-white/[0.06] bg-card-bg p-10 text-center font-light text-muted;
+  }
+
+  .realm-detail-skeleton {
+    @apply h-[200px] animate-pulse rounded-card border border-white/[0.04] bg-white/[0.03];
   }
 }

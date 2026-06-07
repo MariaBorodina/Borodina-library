@@ -1,0 +1,22 @@
+<section class="section">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Browse by <span>Realm</span></h1>
+      <p class="section-subtitle">Explore books by thematic world — from dragon citadels to cyberpunk streets.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="realm-grid" aria-busy="true" aria-label="Loading realms">
+      @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
+        <div class="realm-card realm-card--skeleton"></div>
+      }
+    </div>
+  } @else {
+    <div class="realm-grid">
+      @for (realm of realms(); track realm.id) {
+        <app-realm-card [realm]="realm" />
+      }
+    </div>
+  }
+</section>

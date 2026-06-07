@@ -1,0 +1,52 @@
+<div class="stars"></div>
+
+<nav>
+  <a routerLink="/" class="logo">Chronicles</a>
+  <ul class="nav-links">
+    <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a></li>
+    <li><a routerLink="/realms" routerLinkActive="active">Browse by Realm</a></li>
+    <li><a href="#">Library</a></li>
+    <li><a href="#">Collections</a></li>
+    <li><a href="#">Authors</a></li>
+    <li><a href="#">Community</a></li>
+  </ul>
+</nav>
+
+<router-outlet />
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Chronicles</div>
+      <p class="footer-desc">
+        A curated sanctuary for modern fantasy and science fiction. We believe stories are portals,
+        and every reader deserves a world that feels like home.
+      </p>
+    </div>
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="#">New Releases</a>
+      <a href="#">Bestsellers</a>
+      <a href="#">Hidden Gems</a>
+      <a href="#">Author Interviews</a>
+    </div>
+    <div class="footer-col">
+      <h4>Community</h4>
+      <a href="#">Reading Circles</a>
+      <a href="#">Reviews</a>
+      <a href="#">Forums</a>
+      <a href="#">Events</a>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <a href="#">My Library</a>
+      <a href="#">Wishlist</a>
+      <a href="#">Settings</a>
+      <a href="#">Support</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span> 2026 Chronicles Library. All worlds reserved.</span>
+    <span>Crafted for dreamers and stargazers.</span>
+  </div>
+</footer>
