@@ -1,0 +1,13 @@
+<label class="realm-select">
+  <span class="realm-select__label">{{ label() }}</span>
+  <select
+    class="realm-select__input"
+    [value]="value()"
+    (change)="onSelectionChange($event)"
+  >
+    <option value="">Select a realm</option>
+    @for (realm of realms(); track realm.id) {
+      <option [value]="realm.slug">{{ realm.name }}</option>
+    }
+  </select>
+</label>

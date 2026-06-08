@@ -1,0 +1,14 @@
+<a class="realm-card" [routerLink]="['/realms', realm().slug]">
+  <div class="realm-card__glow"></div>
+  <div class="realm-card__content">
+    <h3 class="realm-card__name">{{ realm().name }}</h3>
+    @if (realm().description) {
+      <p class="realm-card__description">{{ realm().description }}</p>
+    }
+    @if (realm().bookCount !== undefined) {
+      <span class="realm-card__count">
+        {{ realm().bookCount === 1 ? '1 book' : realm().bookCount + ' books' }}
+      </span>
+    }
+  </div>
+</a>

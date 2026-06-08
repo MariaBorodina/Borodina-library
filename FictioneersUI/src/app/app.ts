@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { AppShellComponent } from './layout/app-shell/app-shell.component';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  imports: [AppShellComponent],
+  template: '<app-shell />',
 })
 export class App {}

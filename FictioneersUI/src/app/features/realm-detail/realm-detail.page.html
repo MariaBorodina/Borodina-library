@@ -1,0 +1,22 @@
+<section class="section">
+  @if (loading()) {
+    <div class="realm-detail-skeleton" aria-busy="true"></div>
+  } @else if (realm(); as currentRealm) {
+    <div class="section-header">
+      <div>
+        <a routerLink="/realms" class="realm-detail__back">← All Realms</a>
+        <h1 class="page-title">{{ currentRealm.name }}</h1>
+        @if (currentRealm.description) {
+          <p class="section-subtitle">{{ currentRealm.description }}</p>
+        }
+      </div>
+    </div>
+    <p class="realm-detail__placeholder">Book listings for this realm will appear here.</p>
+  } @else {
+    <div class="section-header">
+      <h1 class="page-title">Realm not found</h1>
+      <p class="section-subtitle">This realm does not exist or may have been removed.</p>
+      <a routerLink="/realms" class="btn btn-secondary">Back to Realms</a>
+    </div>
+  }
+</section>

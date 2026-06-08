@@ -42,7 +42,8 @@
       content: '';
     }
 
-    &:hover {
+    &:hover,
+    &.active {
       @apply text-primary;
 
       &::after {
@@ -93,13 +94,14 @@
     @apply mb-10 inline-block rounded-pill border border-primary/30 bg-primary/[0.08] px-5 py-2.5 font-sans text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-primary backdrop-blur-[10px];
   }
 
-  .hero h1 {
+  .page-title {
     @apply mb-7 font-display text-[clamp(3.2rem,7vw,6rem)] font-bold leading-[1.05] tracking-[0.02em] text-text;
     text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   }
 
-  .hero h1 em {
-    @apply not-italic text-primary;
+  .page-title em,
+  .page-title span {
+    @apply not-italic font-bold text-primary;
     text-shadow: 0 0 60px rgba(226, 201, 127, 0.4);
   }
 
@@ -164,7 +166,7 @@
   }
 
   .category-pill {
-    @apply shrink-0 cursor-pointer rounded-pill border border-white/[0.08] bg-transparent px-7 py-3.5 font-sans text-[0.85rem] font-medium tracking-[0.02em] text-muted transition-all duration-300 ease-in-out;
+    @apply inline-block shrink-0 cursor-pointer rounded-pill border border-white/[0.08] bg-transparent px-7 py-3.5 text-center font-sans text-[0.85rem] font-medium tracking-[0.02em] text-muted no-underline transition-all duration-300 ease-in-out;
 
     &:hover,
     &.active {
@@ -329,5 +331,134 @@
 
   .delay-3 {
     animation-delay: 0.45s;
+  }
+
+  .realm-grid {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-9 max-[768px]:grid-cols-1 max-[768px]:gap-5;
+  }
+
+  .realm-card {
+    @apply relative block min-h-[180px] cursor-pointer overflow-hidden rounded-card border border-white/[0.06] bg-card-bg no-underline backdrop-blur-[20px] transition-all duration-400 ease-in-out;
+
+    &::before {
+      @apply pointer-events-none absolute inset-0 z-[2] rounded-card p-px opacity-0 transition-opacity duration-400 ease-in-out;
+      content: '';
+      background: linear-gradient(
+        135deg,
+        rgba(226, 201, 127, 0.25),
+        transparent 50%,
+        rgba(199, 125, 255, 0.12)
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    &:hover::before,
+    &:focus-visible::before {
+      @apply opacity-100;
+    }
+
+    &:hover {
+      @apply -translate-y-2.5 border-primary/15 shadow-[0_24px_60px_rgba(0,0,0,0.5),0_0_40px_rgba(226,201,127,0.08)];
+    }
+
+    &:focus-visible {
+      @apply outline-2 outline-offset-4 outline-primary;
+    }
+  }
+
+  .realm-card__glow {
+    @apply pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-40 blur-[40px];
+    background: radial-gradient(circle, rgba(226, 201, 127, 0.2) 0%, transparent 70%);
+  }
+
+  .realm-card__content {
+    @apply relative z-[1] flex h-full flex-col p-8;
+  }
+
+  .realm-card__name {
+    @apply mb-3 font-serif text-[1.35rem] font-semibold leading-[1.3] tracking-[0.02em] text-text;
+  }
+
+  .realm-card__description {
+    @apply mb-5 flex-1 text-[0.95rem] font-light leading-[1.7] text-muted;
+  }
+
+  .realm-card__count {
+    @apply mt-auto inline-block w-fit rounded-pill bg-white/[0.04] px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] text-secondary;
+  }
+
+  .realm-card--skeleton {
+    @apply min-h-[180px] animate-pulse cursor-default border-white/[0.04] bg-white/[0.03];
+
+    &:hover {
+      @apply translate-y-0 border-white/[0.04] shadow-none;
+    }
+  }
+
+  .realm-detail__back {
+    @apply mb-6 inline-block text-[0.85rem] font-medium uppercase tracking-[0.08em] text-muted no-underline transition-colors duration-300;
+
+    &:hover {
+      @apply text-primary;
+    }
+  }
+
+  .realm-detail__placeholder {
+    @apply rounded-card border border-white/[0.06] bg-card-bg p-10 text-center font-light text-muted;
+  }
+
+  .realm-detail-skeleton {
+    @apply h-[200px] animate-pulse rounded-card border border-white/[0.04] bg-white/[0.03];
+  }
+
+  .search-form {
+    @apply mb-12 flex max-w-[720px] flex-wrap gap-4;
+  }
+
+  .search-form__input {
+    @apply min-w-[240px] flex-1 rounded-pill border border-white/[0.08] bg-card-bg px-6 py-4 font-sans text-base text-text outline-none transition-colors duration-300;
+
+    &:focus {
+      @apply border-primary/40;
+    }
+
+    &::placeholder {
+      @apply text-muted;
+    }
+  }
+
+  .search-empty {
+    @apply rounded-card border border-white/[0.06] bg-card-bg p-10 text-center;
+  }
+
+  .search-empty__message {
+    @apply mb-8 text-[1.05rem] font-light text-muted;
+  }
+
+  .search-empty__links {
+    @apply flex flex-wrap justify-center gap-4;
+  }
+
+  .realm-select {
+    @apply block;
+  }
+
+  .realm-select__label {
+    @apply mb-2 block font-sans text-[0.85rem] font-medium uppercase tracking-[0.08em] text-muted;
+  }
+
+  .realm-select__input {
+    @apply w-full rounded-card border border-white/[0.08] bg-card-bg px-5 py-3.5 font-sans text-base text-text outline-none transition-colors duration-300;
+
+    &:focus {
+      @apply border-primary/40;
+    }
   }
 }
