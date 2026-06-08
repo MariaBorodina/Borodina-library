@@ -33,4 +33,22 @@ describe('RealmCardComponent', () => {
     const link = fixture.nativeElement.querySelector('a.realm-card');
     expect(link?.getAttribute('href')).toContain('/realms/cyberpunk');
   });
+
+  it('should render description when provided', () => {
+    const description = fixture.nativeElement.querySelector('.realm-card__description');
+    expect(description?.textContent).toContain('Neon-lit dystopias.');
+  });
+
+  it('should render plural book count', () => {
+    const count = fixture.nativeElement.querySelector('.realm-card__count');
+    expect(count?.textContent?.trim()).toBe('14 books');
+  });
+
+  it('should render singular book count', () => {
+    fixture.componentRef.setInput('realm', { ...realm, bookCount: 1 });
+    fixture.detectChanges();
+
+    const count = fixture.nativeElement.querySelector('.realm-card__count');
+    expect(count?.textContent?.trim()).toBe('1 book');
+  });
 });

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { BrowseRealmsPage } from './browse-realms.page';
 import { RealmService } from '../../core/services/realm.service';
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 
 describe('BrowseRealmsPage', () => {
   let fixture: ComponentFixture<BrowseRealmsPage>;
@@ -12,20 +12,24 @@ describe('BrowseRealmsPage', () => {
     { id: '2', slug: 'epic-fantasy', name: 'Epic Fantasy', bookCount: 10 },
   ];
 
-  beforeEach(async () => {
+  async function createPage(getRealms = () => of(mockRealms)): Promise<void> {
     await TestBed.configureTestingModule({
       imports: [BrowseRealmsPage],
       providers: [
         provideRouter([]),
         {
           provide: RealmService,
-          useValue: { getRealms: () => of(mockRealms) },
+          useValue: { getRealms },
         },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BrowseRealmsPage);
     fixture.detectChanges();
+  }
+
+  beforeEach(async () => {
+    await createPage();
   });
 
   it('should create', () => {
@@ -53,5 +57,17 @@ describe('BrowseRealmsPage', () => {
     const links = fixture.nativeElement.querySelectorAll('a.realm-card');
     expect(links[0].getAttribute('href')).toContain('/realms/hard-sci-fi');
     expect(links[1].getAttribute('href')).toContain('/realms/epic-fantasy');
+  });
+
+  it('should show skeleton cards while realms are loading', async () => {
+    TestBed.resetTestingModule();
+    await createPage(() => NEVER);
+
+    const grid = fixture.nativeElement.querySelector('[aria-busy="true"]');
+    expect(grid?.getAttribute('aria-label')).toBe('Loading realms');
+
+    const skeletons = fixture.nativeElement.querySelectorAll('.realm-card--skeleton');
+    expect(skeletons.length).toBe(6);
+    expect(fixture.nativeElement.querySelectorAll('app-realm-card').length).toBe(0);
   });
 });

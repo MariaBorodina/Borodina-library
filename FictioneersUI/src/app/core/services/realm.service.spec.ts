@@ -28,4 +28,21 @@ describe('RealmService', () => {
     const realm = await firstValueFrom(service.getRealmBySlug('hard-sci-fi'));
     expect(realm?.name).toBe('Hard Sci-Fi');
   });
+
+  it('should return undefined for an unknown slug', async () => {
+    const realm = await firstValueFrom(service.getRealmBySlug('unknown-realm'));
+    expect(realm).toBeUndefined();
+  });
+
+  it('should include all nine seed realms', async () => {
+    const realms = await firstValueFrom(service.getRealms());
+    expect(realms).toHaveLength(9);
+  });
+
+  it('should include realms with zero books for empty-detail testing', async () => {
+    const realms = await firstValueFrom(service.getRealms());
+    const emptyRealm = realms.find((realm) => realm.slug === 'time-travel-archives');
+    expect(emptyRealm?.name).toBe('Time Travel Archives');
+    expect(emptyRealm?.bookCount).toBe(0);
+  });
 });

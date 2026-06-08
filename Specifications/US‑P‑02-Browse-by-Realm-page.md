@@ -229,15 +229,18 @@ getRealmBySlug(slug: string): Observable<Realm | undefined>
 
 ---
 
-### Phase 3 — Tests & polish ⏳ Partially done
+### Phase 3 — Tests & polish ✅ **Implemented successfully**
 
-| Item | Status |
-|------|--------|
-| `browse-realms.page.spec.ts` | ✅ Done |
-| `realm-card.component.spec.ts` | ✅ Done |
-| `realm.service.spec.ts` | ✅ Done |
-| `app.spec.ts` updated | ✅ Done |
-| E2E / manual acceptance checklist | ⏳ Optional follow-up |
+| Item | Status | Notes |
+|------|--------|-------|
+| `browse-realms.page.spec.ts` | ✅ Done | Includes loading skeleton (FR‑C‑03) |
+| `realm-card.component.spec.ts` | ✅ Done | Name, link, description, book count |
+| `realm.service.spec.ts` | ✅ Done | Seed count, unknown slug, zero-book realm |
+| `app.spec.ts` updated | ✅ Done | App shell smoke test |
+| `app-shell.component.spec.ts` | ✅ Done | Nav + footer “Browse by Realm” links |
+| E2E / manual acceptance checklist | ⏳ Optional follow-up | No Playwright/Cypress in MVP |
+
+**Verification:** `npm test` — 28 tests passing; `ng build` succeeds.
 
 ---
 
@@ -302,7 +305,7 @@ Open `http://localhost:4200/realms` or use **Browse by Realm** in the nav.
 
 ```powershell
 npm run build   # production build
-npm test        # unit tests (12 passing)
+npm test        # unit tests (28 passing)
 ```
 
 ---
@@ -321,4 +324,4 @@ Manual test against Gherkin:
 
 Automated: Vitest specs pass; `ng build` succeeds.
 
-**US‑P‑02 status: Complete (Phase 0 + Phase 1 + Phase 2).**
+**US‑P‑02 status: Complete (Phase 0 + Phase 1 + Phase 2 + Phase 3).**

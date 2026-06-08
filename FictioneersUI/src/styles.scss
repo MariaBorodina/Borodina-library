@@ -94,13 +94,14 @@
     @apply mb-10 inline-block rounded-pill border border-primary/30 bg-primary/[0.08] px-5 py-2.5 font-sans text-[0.75rem] font-semibold uppercase tracking-[0.2em] text-primary backdrop-blur-[10px];
   }
 
-  .hero h1 {
+  .page-title {
     @apply mb-7 font-display text-[clamp(3.2rem,7vw,6rem)] font-bold leading-[1.05] tracking-[0.02em] text-text;
     text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   }
 
-  .hero h1 em {
-    @apply not-italic text-primary;
+  .page-title em,
+  .page-title span {
+    @apply not-italic font-bold text-primary;
     text-shadow: 0 0 60px rgba(226, 201, 127, 0.4);
   }
 
