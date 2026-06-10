@@ -19,9 +19,11 @@ AS $$
     )
   ORDER BY
     CASE
-      WHEN p_query IS NULL OR trim(p_query) = '' THEN b.created_at
+      WHEN p_query IS NULL OR trim(p_query) = ''
+        THEN NULL
       ELSE ts_rank(b.search_vector, plainto_tsquery('english', p_query))
-    END DESC
+    END DESC NULLS LAST,
+    b.created_at DESC
   LIMIT greatest(p_limit, 1);
 $$;
 
