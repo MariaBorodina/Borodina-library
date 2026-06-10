@@ -1,0 +1,68 @@
+<section class="mx-auto max-w-md px-4 py-16">
+  <h1 class="mb-6 text-2xl font-semibold">{{ isSignUp ? 'Create account' : 'Log in' }}</h1>
+
+  <form (submit)="submit($event)" class="flex flex-col gap-4">
+    @if (isSignUp) {
+      <label class="flex flex-col gap-1">
+        <span>Display name</span>
+        <input
+          type="text"
+          name="displayName"
+          [(ngModel)]="displayName"
+          class="rounded border px-3 py-2"
+          autocomplete="name"
+        />
+      </label>
+      <label class="flex items-center gap-2">
+        <input type="checkbox" [(ngModel)]="isAuthorSignup" name="isAuthor" />
+        <span>I want to publish books as an author</span>
+      </label>
+    }
+
+    <label class="flex flex-col gap-1">
+      <span>Email</span>
+      <input
+        type="email"
+        name="email"
+        required
+        [(ngModel)]="email"
+        class="rounded border px-3 py-2"
+        autocomplete="email"
+      />
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span>Password</span>
+      <input
+        type="password"
+        name="password"
+        required
+        [(ngModel)]="password"
+        class="rounded border px-3 py-2"
+        autocomplete="{{ isSignUp ? 'new-password' : 'current-password' }}"
+      />
+    </label>
+
+    @if (errorMessage()) {
+      <p class="text-red-600" role="alert">{{ errorMessage() }}</p>
+    }
+
+    <button
+      type="submit"
+      class="rounded bg-indigo-600 px-4 py-2 text-white disabled:opacity-50"
+      [disabled]="loading()"
+    >
+      {{ loading() ? 'Please wait…' : isSignUp ? 'Sign up' : 'Log in' }}
+    </button>
+  </form>
+
+  <p class="mt-4 text-sm">
+    @if (isSignUp) {
+      Already have an account?
+      <button type="button" class="text-indigo-600 underline" (click)="toggleMode()">Log in</button>
+    } @else {
+      New here?
+      <button type="button" class="text-indigo-600 underline" (click)="toggleMode()">Sign up</button>
+    }
+  </p>
+</section>

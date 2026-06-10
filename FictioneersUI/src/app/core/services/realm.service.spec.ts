@@ -1,12 +1,37 @@
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
+import { SEED_REALMS } from '../data/realm.seed';
 import { RealmService } from './realm.service';
+import { SupabaseService } from './supabase.service';
 
 describe('RealmService', () => {
   let service: RealmService;
 
+  const supabaseMock = {
+    client: {
+      from: () => ({
+        select: () => ({
+          order: () =>
+            Promise.resolve({
+              data: null,
+              error: new Error('offline'),
+            }),
+          eq: () => ({
+            maybeSingle: () =>
+              Promise.resolve({
+                data: null,
+                error: new Error('offline'),
+              }),
+          }),
+        }),
+      }),
+    },
+  };
+
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [{ provide: SupabaseService, useValue: supabaseMock }],
+    });
     service = TestBed.inject(RealmService);
   });
 
@@ -34,7 +59,7 @@ describe('RealmService', () => {
     expect(realm).toBeUndefined();
   });
 
-  it('should include all nine seed realms', async () => {
+  it('should include all nine seed realms when Supabase is unavailable', async () => {
     const realms = await firstValueFrom(service.getRealms());
     expect(realms).toHaveLength(9);
   });

@@ -10,6 +10,15 @@
     <li><a href="#">Collections</a></li>
     <li><a routerLink="/authors" routerLinkActive="active">Authors</a></li>
     <li><a href="#">Community</a></li>
+    @if (auth.isAuthenticated()) {
+      <li><a routerLink="/my-books" routerLinkActive="active">My Books</a></li>
+      @if (auth.isAuthor()) {
+        <li><a routerLink="/books-by-me" routerLinkActive="active">Books by me</a></li>
+      }
+      <li><button type="button" class="nav-link-btn" (click)="logout()">Log out</button></li>
+    } @else {
+      <li><a routerLink="/login" routerLinkActive="active">Log in</a></li>
+    }
   </ul>
 </nav>
 

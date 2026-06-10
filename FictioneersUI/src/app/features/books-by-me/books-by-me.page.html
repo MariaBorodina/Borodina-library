@@ -1,0 +1,20 @@
+<section class="mx-auto max-w-4xl px-4 py-12">
+  <h1 class="mb-6 text-2xl font-semibold">Books by me</h1>
+
+  @if (loading()) {
+    <p>Loading your books…</p>
+  } @else if (myBooks().length === 0) {
+    <p>You haven't added any books yet. Click 'Add new book' to get started.</p>
+    <button type="button" class="mt-4 rounded bg-indigo-600 px-4 py-2 text-white">Add new book</button>
+  } @else {
+    <ul class="grid gap-4 sm:grid-cols-2">
+      @for (book of myBooks(); track book.id) {
+        <li class="rounded border p-4">
+          <h2 class="font-medium">{{ book.title }}</h2>
+          <p class="text-sm capitalize text-gray-500">{{ book.status }}</p>
+        </li>
+      }
+    </ul>
+    <button type="button" class="mt-6 rounded bg-indigo-600 px-4 py-2 text-white">Add new book</button>
+  }
+</section>

@@ -1,0 +1,19 @@
+<section class="mx-auto max-w-4xl px-4 py-12">
+  <h1 class="mb-6 text-2xl font-semibold">My Books</h1>
+
+  @if (loading()) {
+    <p>Loading your library…</p>
+  } @else if (books().length === 0) {
+    <p>Your library is empty. Start browsing and save books you love!</p>
+    <a routerLink="/realms" class="mt-4 inline-block text-indigo-600 underline">Browse books</a>
+  } @else {
+    <ul class="grid gap-4 sm:grid-cols-2">
+      @for (book of books(); track book.id) {
+        <li class="rounded border p-4">
+          <h2 class="font-medium">{{ book.title }}</h2>
+          <p class="text-sm text-gray-600 line-clamp-2">{{ book.synopsis }}</p>
+        </li>
+      }
+    </ul>
+  }
+</section>

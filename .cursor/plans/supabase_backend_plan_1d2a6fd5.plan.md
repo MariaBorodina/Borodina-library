@@ -4,34 +4,34 @@ overview: "Set up a Supabase backend (local CLI + linked cloud) with PostgreSQL 
 todos:
   - id: supabase-init
     content: Initialize supabase/ folder, CLI local dev, link cloud project, add environment keys to Angular
-    status: in_progress
+    status: completed
   - id: schema-migrations
     content: "Write migrations 001-004: profiles, realms, books, increments, saved_books, reading_progress, triggers"
-    status: pending
+    status: completed
   - id: rls-policies
     content: Implement RLS for all tables + Storage bucket policies (public read, author write own paths)
-    status: pending
+    status: completed
   - id: auth-layer
     content: Configure Supabase Auth (email/password) + profiles trigger; build Angular AuthService and guards
-    status: pending
+    status: completed
   - id: storage-quota
     content: Create book-covers and book-increments buckets with size/MIME limits and 2GB quota triggers
-    status: pending
+    status: completed
   - id: search-rpc
     content: Add full-text search migration (search_vector, GIN index, search_books RPC)
-    status: pending
+    status: completed
   - id: author-crud
     content: "Implement book/increment CRUD RPCs: optimistic locking, delete_book_if_empty, storage cleanup"
-    status: pending
+    status: completed
   - id: reader-library
     content: Implement saved_books and reading_progress tables + Angular LibraryService
-    status: pending
+    status: completed
   - id: seed-realms
     content: Seed 9 realms from existing realm.seed.ts into supabase/seed.sql
-    status: pending
+    status: completed
   - id: wire-frontend
     content: Replace RealmService seed data and stub apiUrl with Supabase client calls
-    status: pending
+    status: completed
 isProject: false
 ---
 
