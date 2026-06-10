@@ -1,25 +1,66 @@
 import { Injectable } from '@angular/core';
-import { delay, Observable, of } from 'rxjs';
+import { from, map, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { SEED_REALMS } from '../data/realm.seed';
 import { Realm } from '../../shared/models/realm.model';
+import { RealmRow } from '../../shared/models/library.model';
 import { environment } from '../../../environments/environment';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class RealmService {
+  constructor(private readonly supabase: SupabaseService) {}
+
   getRealms(): Observable<Realm[]> {
-    return this.fetchRealms().pipe(delay(150));
+    if (!environment.supabaseUrl) {
+      return of(SEED_REALMS);
+    }
+
+    return from(
+      this.supabase.client
+        .from('realms_with_book_count')
+        .select('id, slug, name, description, book_count')
+        .order('sort_order'),
+    ).pipe(
+      map(({ data, error }) => {
+        if (error || !data) {
+          throw error ?? new Error('Failed to load realms');
+        }
+        return (data as RealmRow[]).map((row) => this.toRealm(row));
+      }),
+      catchError(() => of(SEED_REALMS)),
+    );
   }
 
   getRealmBySlug(slug: string): Observable<Realm | undefined> {
-    return of(SEED_REALMS.find((realm) => realm.slug === slug));
-  }
-
-  /** Swap implementation to HttpClient when environment.apiUrl is configured */
-  private fetchRealms(): Observable<Realm[]> {
-    if (environment.apiUrl) {
-      // TODO: return this.http.get<Realm[]>(`${environment.apiUrl}/realms`);
+    if (!environment.supabaseUrl) {
+      return of(SEED_REALMS.find((realm) => realm.slug === slug));
     }
 
-    return of(SEED_REALMS);
+    return from(
+      this.supabase.client
+        .from('realms_with_book_count')
+        .select('id, slug, name, description, book_count')
+        .eq('slug', slug)
+        .maybeSingle(),
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) {
+          throw error;
+        }
+        return data ? this.toRealm(data as RealmRow) : undefined;
+      }),
+      catchError(() => of(SEED_REALMS.find((realm) => realm.slug === slug))),
+    );
+  }
+
+  private toRealm(row: RealmRow): Realm {
+    return {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      description: row.description ?? undefined,
+      bookCount: row.book_count,
+    };
   }
 }
