@@ -45,6 +45,27 @@ export class RealmService {
     );
   }
 
+  getRealmById(id: string): Observable<Realm | undefined> {
+    if (!this.supabase.isConfigured) {
+      return of(SEED_REALMS.find((realm) => realm.id === id));
+    }
+
+    return fromSupabaseQuery<Realm | undefined>((signal) => {
+      const builder = this.supabase.requireClient()
+        .from('realms_with_book_count')
+        .select('id, slug, name, description, book_count')
+        .eq('id', id)
+        .maybeSingle();
+
+      return withAbortSignal(builder, signal).then(({ data, error }) => ({
+        data: data ? this.toRealm(data as RealmRow) : undefined,
+        error,
+      }));
+    }).pipe(
+      catchError(() => of(SEED_REALMS.find((realm) => realm.id === id))),
+    );
+  }
+
   getRealmBySlug(slug: string): Observable<Realm | undefined> {
     if (!this.supabase.isConfigured) {
       return of(SEED_REALMS.find((realm) => realm.slug === slug));

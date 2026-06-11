@@ -17,6 +17,10 @@ export const routes: Routes = [
       import('./features/realm-detail/realm-detail.page').then((m) => m.RealmDetailPage),
   },
   {
+    path: 'books/:id/read',
+    loadComponent: () => import('./features/reading/reading.page').then((m) => m.ReadingPage),
+  },
+  {
     path: 'books/:id',
     loadComponent: () => import('./features/book-info/book-info.page').then((m) => m.BookInfoPage),
   },

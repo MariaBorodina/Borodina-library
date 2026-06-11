@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { from, map, Observable } from 'rxjs';
+import { from, map, Observable, of } from 'rxjs';
+import { getSeedIncrementsByBook } from '../data/increment.seed';
 import { Increment, IncrementFileFormat } from '../../shared/models/library.model';
 import { SupabaseService } from './supabase.service';
 
@@ -27,6 +28,10 @@ export class IncrementService {
   constructor(private readonly supabase: SupabaseService) {}
 
   getIncrementsByBook(bookId: string): Observable<Increment[]> {
+    if (!this.supabase.isConfigured) {
+      return of(getSeedIncrementsByBook(bookId));
+    }
+
     return from(
       this.supabase.requireClient()
         .from('increments')
