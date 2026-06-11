@@ -6,6 +6,7 @@ import { Realm } from '../../shared/models/realm.model';
 import { RealmRow } from '../../shared/models/library.model';
 import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
+import { fromSupabaseQuery, withAbortSignal } from './supabase-observable';
 
 @Injectable({ providedIn: 'root' })
 export class RealmService {
@@ -55,23 +56,19 @@ export class RealmService {
       return of(undefined);
     }
 
-    return from(
-      this.supabase.client
+    return fromSupabaseQuery<Realm | undefined>((signal) => {
+      const builder = this.supabase.client
         .from('realms_with_book_count')
         .select('id, slug, name, description, book_count')
         .eq('slug', slug)
-        .maybeSingle(),
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
-        return data ? this.toRealm(data as RealmRow) : undefined;
-      }),
-      catchError(() => {
-        // return of(SEED_REALMS.find((realm) => realm.slug === slug));
-        return of(undefined);
-      }),
+        .maybeSingle();
+
+      return withAbortSignal(builder, signal).then(({ data, error }) => ({
+        data: data ? this.toRealm(data as RealmRow) : undefined,
+        error,
+      }));
+    }).pipe(
+      catchError(() => of(undefined)),
     );
   }
 

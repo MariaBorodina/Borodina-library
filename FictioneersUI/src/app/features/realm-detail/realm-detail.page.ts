@@ -50,9 +50,15 @@ export class RealmDetailPage implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((books) => {
-        this.books.set(books);
-        this.loadingBooks.set(false);
+      .subscribe({
+        next: (books) => {
+          this.books.set(books);
+          this.loadingBooks.set(false);
+        },
+        error: () => {
+          this.books.set([]);
+          this.loadingBooks.set(false);
+        },
       });
   }
 }

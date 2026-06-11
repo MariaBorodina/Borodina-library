@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { from, map, Observable, of } from 'rxjs';
 import { getSeedBookById, getSeedBooksByRealm } from '../data/book.seed';
 import { Book, BookStatus } from '../../shared/models/library.model';
 import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
+import { fromSupabaseQuery, withAbortSignal } from './supabase-observable';
 
 export interface CreateBookInput {
   title: string;
@@ -28,28 +29,35 @@ export interface UpdateBookInput {
 
 @Injectable({ providedIn: 'root' })
 export class BookService {
+  private readonly booksByRealmCache = new Map<string, Book[]>();
+
   constructor(private readonly supabase: SupabaseService) {}
 
   getBooksByRealm(realmId: string): Observable<Book[]> {
+    const cached = this.booksByRealmCache.get(realmId);
+    if (cached) {
+      return of(cached);
+    }
+
     if (!environment.supabaseUrl) {
       return of(getSeedBooksByRealm(realmId));
     }
 
-    return from(
-      this.supabase.client
+    return fromSupabaseQuery<Book[]>((signal) => {
+      const builder = this.supabase.client
         .from('books')
         .select('*')
         .eq('realm_id', realmId)
         .eq('status', 'published')
-        .order('title'),
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
-        return (data ?? []) as Book[];
-      }),
-      catchError(() => of(getSeedBooksByRealm(realmId))),
+        .order('title');
+
+      return withAbortSignal(builder, signal).then(({ data, error }) => ({
+        data: (data ?? []) as Book[],
+        error,
+      }));
+    }).pipe(
+      tap((books) => this.booksByRealmCache.set(realmId, books)),
+      catchError(() => of([] as Book[])),
     );
   }
 
@@ -79,13 +87,14 @@ export class BookService {
       return of(getSeedBookById(id));
     }
 
-    return from(this.supabase.client.from('books').select('*').eq('id', id).maybeSingle()).pipe(
-      map(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
-        return (data as Book | null) ?? undefined;
-      }),
+    return fromSupabaseQuery<Book | null>((signal) => {
+      const builder = this.supabase.client.from('books').select('*').eq('id', id).maybeSingle();
+      return withAbortSignal(builder, signal).then(({ data, error }) => ({
+        data: data as Book | null,
+        error,
+      }));
+    }).pipe(
+      map((data) => data ?? undefined),
       catchError(() => of(getSeedBookById(id))),
     );
   }

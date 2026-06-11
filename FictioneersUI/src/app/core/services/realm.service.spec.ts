@@ -26,6 +26,13 @@ describe('RealmService', () => {
     },
   ];
 
+  function createThenable<T>(result: { data: T | null; error: unknown }) {
+    const response = Promise.resolve(result);
+    return Object.assign(response, {
+      abortSignal: () => response,
+    });
+  }
+
   function createSupabaseMock(
     options: {
       realms?: RealmRow[] | null;
@@ -41,17 +48,17 @@ describe('RealmService', () => {
       client: {
         from: () => ({
           select: () => ({
-            order: () => Promise.resolve({ data: realms, error: realmsError }),
+            order: () => createThenable({ data: realms, error: realmsError }),
             eq: (_column: string, slug: string) => ({
               maybeSingle: () => {
                 if (options.slugError) {
-                  return Promise.resolve({ data: null, error: options.slugError });
+                  return createThenable({ data: null, error: options.slugError });
                 }
                 const row =
                   options.slugRow !== undefined
                     ? options.slugRow
                     : (mockRealmRows.find((realm) => realm.slug === slug) ?? null);
-                return Promise.resolve({ data: row, error: null });
+                return createThenable({ data: row, error: null });
               },
             }),
           }),
