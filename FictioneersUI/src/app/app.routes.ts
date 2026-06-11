@@ -17,6 +17,10 @@ export const routes: Routes = [
       import('./features/realm-detail/realm-detail.page').then((m) => m.RealmDetailPage),
   },
   {
+    path: 'books/:id',
+    loadComponent: () => import('./features/book-info/book-info.page').then((m) => m.BookInfoPage),
+  },
+  {
     path: 'search',
     loadComponent: () => import('./features/search/search.page').then((m) => m.SearchPage),
   },

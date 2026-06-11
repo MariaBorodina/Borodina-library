@@ -1,6 +1,6 @@
 <section class="section">
   @if (loading()) {
-    <div class="realm-detail-skeleton" aria-busy="true"></div>
+    <div class="realm-detail-skeleton" aria-busy="true" aria-label="Loading realm"></div>
   } @else if (realm(); as currentRealm) {
     <div class="section-header">
       <div>
@@ -11,7 +11,27 @@
         }
       </div>
     </div>
-    <p class="realm-detail__placeholder">Book listings for this realm will appear here.</p>
+
+    @if (loadingBooks()) {
+      <div class="book-grid" aria-busy="true" aria-label="Loading books">
+        @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
+          <div class="book-card book-card--skeleton"></div>
+        }
+      </div>
+    } @else if (books().length === 0) {
+      <div class="realm-empty" role="status">
+        <p class="realm-empty__message">No books in this realm yet. Check back soon!</p>
+        <div class="realm-empty__links">
+          <a routerLink="/realms" class="btn btn-secondary">Browse other realms</a>
+        </div>
+      </div>
+    } @else {
+      <div class="book-grid">
+        @for (book of books(); track book.id) {
+          <app-book-card [book]="book" />
+        }
+      </div>
+    }
   } @else {
     <div class="section-header">
       <h1 class="page-title">Realm not found</h1>

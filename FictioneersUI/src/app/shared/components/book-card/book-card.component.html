@@ -1,0 +1,10 @@
+<a class="book-card" [routerLink]="['/books', book().id]">
+  @if (coverUrl(); as url) {
+    <img [src]="url" [alt]="book().title" class="book-cover" />
+  } @else {
+    <div class="book-cover book-cover--placeholder" [attr.aria-label]="book().title"></div>
+  }
+  <div class="book-info">
+    <h3 class="book-title">{{ book().title }}</h3>
+  </div>
+</a>

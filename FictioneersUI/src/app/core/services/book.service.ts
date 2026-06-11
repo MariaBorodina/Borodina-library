@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
-import { from, map, Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { from, map, Observable, of } from 'rxjs';
+import { getSeedBookById, getSeedBooksByRealm } from '../data/book.seed';
 import { Book, BookStatus } from '../../shared/models/library.model';
+import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 
 export interface CreateBookInput {
@@ -28,6 +31,10 @@ export class BookService {
   constructor(private readonly supabase: SupabaseService) {}
 
   getBooksByRealm(realmId: string): Observable<Book[]> {
+    if (!environment.supabaseUrl) {
+      return of(getSeedBooksByRealm(realmId));
+    }
+
     return from(
       this.supabase.client
         .from('books')
@@ -42,6 +49,7 @@ export class BookService {
         }
         return (data ?? []) as Book[];
       }),
+      catchError(() => of(getSeedBooksByRealm(realmId))),
     );
   }
 
@@ -67,6 +75,10 @@ export class BookService {
   }
 
   getBookById(id: string): Observable<Book | undefined> {
+    if (!environment.supabaseUrl) {
+      return of(getSeedBookById(id));
+    }
+
     return from(this.supabase.client.from('books').select('*').eq('id', id).maybeSingle()).pipe(
       map(({ data, error }) => {
         if (error) {
@@ -74,6 +86,7 @@ export class BookService {
         }
         return (data as Book | null) ?? undefined;
       }),
+      catchError(() => of(getSeedBookById(id))),
     );
   }
 
