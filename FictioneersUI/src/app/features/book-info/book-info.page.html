@@ -1,0 +1,19 @@
+<section class="section">
+  @if (loading()) {
+    <div class="realm-detail-skeleton" aria-busy="true" aria-label="Loading book"></div>
+  } @else if (book(); as currentBook) {
+    <div class="section-header">
+      <div>
+        <a routerLink="/realms" class="realm-detail__back">← Browse Realms</a>
+        <h1 class="page-title">{{ currentBook.title }}</h1>
+        <p class="section-subtitle">Book details and reading experience coming soon.</p>
+      </div>
+    </div>
+  } @else {
+    <div class="section-header">
+      <h1 class="page-title">Book not found</h1>
+      <p class="section-subtitle">This book does not exist or may have been removed.</p>
+      <a routerLink="/realms" class="btn btn-secondary">Browse Realms</a>
+    </div>
+  }
+</section>
