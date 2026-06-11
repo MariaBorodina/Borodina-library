@@ -3,7 +3,6 @@ import { catchError, tap } from 'rxjs/operators';
 import { from, map, Observable, of } from 'rxjs';
 import { getSeedBookById, getSeedBooksByRealm } from '../data/book.seed';
 import { Book, BookStatus } from '../../shared/models/library.model';
-import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { fromSupabaseQuery, withAbortSignal } from './supabase-observable';
 
@@ -39,12 +38,12 @@ export class BookService {
       return of(cached);
     }
 
-    if (!environment.supabaseUrl) {
+    if (!this.supabase.isConfigured) {
       return of(getSeedBooksByRealm(realmId));
     }
 
     return fromSupabaseQuery<Book[]>((signal) => {
-      const builder = this.supabase.client
+      const builder = this.supabase.requireClient()
         .from('books')
         .select('*')
         .eq('realm_id', realmId)
@@ -63,7 +62,7 @@ export class BookService {
 
   getBooksByAuthor(authorId: string): Observable<Book[]> {
     return from(
-      this.supabase.client
+      this.supabase.requireClient()
         .from('books')
         .select('*')
         .eq('author_id', authorId)
@@ -83,12 +82,12 @@ export class BookService {
   }
 
   getBookById(id: string): Observable<Book | undefined> {
-    if (!environment.supabaseUrl) {
+    if (!this.supabase.isConfigured) {
       return of(getSeedBookById(id));
     }
 
     return fromSupabaseQuery<Book | null>((signal) => {
-      const builder = this.supabase.client.from('books').select('*').eq('id', id).maybeSingle();
+      const builder = this.supabase.requireClient().from('books').select('*').eq('id', id).maybeSingle();
       return withAbortSignal(builder, signal).then(({ data, error }) => ({
         data: data as Book | null,
         error,
@@ -101,7 +100,7 @@ export class BookService {
 
   createBook(authorId: string, input: CreateBookInput): Observable<Book> {
     return from(
-      this.supabase.client
+      this.supabase.requireClient()
         .from('books')
         .insert({
           author_id: authorId,
@@ -125,7 +124,7 @@ export class BookService {
 
   updateBookWithVersion(bookId: string, input: UpdateBookInput): Observable<Book> {
     return from(
-      this.supabase.client.rpc('update_book_with_version', {
+      this.supabase.requireClient().rpc('update_book_with_version', {
         p_book_id: bookId,
         p_expected_updated_at: input.expected_updated_at,
         p_title: input.title,
@@ -148,7 +147,7 @@ export class BookService {
   }
 
   deleteBookIfEmpty(bookId: string): Observable<void> {
-    return from(this.supabase.client.rpc('delete_book_if_empty', { p_book_id: bookId })).pipe(
+    return from(this.supabase.requireClient().rpc('delete_book_if_empty', { p_book_id: bookId })).pipe(
       map(({ error }) => {
         if (error) {
           throw error;
@@ -162,7 +161,7 @@ export class BookService {
     const path = `${authorId}/${bookId}/cover.${ext}`;
 
     return from(
-      this.supabase.client.storage.from('book-covers').upload(path, file, { upsert: true }),
+      this.supabase.requireClient().storage.from('book-covers').upload(path, file, { upsert: true }),
     ).pipe(
       map(({ error }) => {
         if (error) {
@@ -177,7 +176,7 @@ export class BookService {
     if (!path) {
       return null;
     }
-    const { data } = this.supabase.client.storage.from('book-covers').getPublicUrl(path);
+    const { data } = this.supabase.requireClient().storage.from('book-covers').getPublicUrl(path);
     return data.publicUrl;
   }
 

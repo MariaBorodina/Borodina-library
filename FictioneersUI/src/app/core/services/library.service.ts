@@ -9,7 +9,7 @@ export class LibraryService {
 
   getSavedBooks(userId: string): Observable<Book[]> {
     return from(
-      this.supabase.client
+      this.supabase.requireClient()
         .from('saved_books')
         .select('book_id, saved_at, books(*)')
         .eq('user_id', userId)
@@ -31,7 +31,7 @@ export class LibraryService {
 
   saveBook(userId: string, bookId: string): Observable<void> {
     return from(
-      this.supabase.client.from('saved_books').upsert({ user_id: userId, book_id: bookId }),
+      this.supabase.requireClient().from('saved_books').upsert({ user_id: userId, book_id: bookId }),
     ).pipe(
       map(({ error }) => {
         if (error) {
@@ -43,7 +43,7 @@ export class LibraryService {
 
   removeSavedBook(userId: string, bookId: string): Observable<void> {
     return from(
-      this.supabase.client.from('saved_books').delete().eq('user_id', userId).eq('book_id', bookId),
+      this.supabase.requireClient().from('saved_books').delete().eq('user_id', userId).eq('book_id', bookId),
     ).pipe(
       map(({ error }) => {
         if (error) {
@@ -55,7 +55,7 @@ export class LibraryService {
 
   getReadingProgress(userId: string, bookId: string): Observable<ReadingProgress | undefined> {
     return from(
-      this.supabase.client
+      this.supabase.requireClient()
         .from('reading_progress')
         .select('*')
         .eq('user_id', userId)
@@ -78,7 +78,7 @@ export class LibraryService {
     pageNumber: number,
   ): Observable<ReadingProgress> {
     return from(
-      this.supabase.client
+      this.supabase.requireClient()
         .from('reading_progress')
         .upsert(
           {

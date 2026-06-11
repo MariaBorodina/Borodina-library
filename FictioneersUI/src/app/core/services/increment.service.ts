@@ -28,7 +28,7 @@ export class IncrementService {
 
   getIncrementsByBook(bookId: string): Observable<Increment[]> {
     return from(
-      this.supabase.client
+      this.supabase.requireClient()
         .from('increments')
         .select('*')
         .eq('book_id', bookId)
@@ -59,7 +59,7 @@ export class IncrementService {
 
     return from(
       (async () => {
-        const { data: quotaOk } = await this.supabase.client.rpc('check_storage_quota', {
+        const { data: quotaOk } = await this.supabase.requireClient().rpc('check_storage_quota', {
           p_additional_bytes: input.file.size,
         });
 
@@ -67,7 +67,7 @@ export class IncrementService {
           throw new Error('Storage quota exceeded');
         }
 
-        const { error: uploadError } = await this.supabase.client.storage
+        const { error: uploadError } = await this.supabase.requireClient().storage
           .from('book-increments')
           .upload(path, input.file);
 
@@ -75,7 +75,7 @@ export class IncrementService {
           throw uploadError;
         }
 
-        const { data, error } = await this.supabase.client
+        const { data, error } = await this.supabase.requireClient()
           .from('increments')
           .insert({
             id: incrementId,
@@ -90,7 +90,7 @@ export class IncrementService {
           .single();
 
         if (error) {
-          await this.supabase.client.storage.from('book-increments').remove([path]);
+          await this.supabase.requireClient().storage.from('book-increments').remove([path]);
           throw error;
         }
 
@@ -100,7 +100,7 @@ export class IncrementService {
   }
 
   deleteIncrement(incrementId: string): Observable<void> {
-    return from(this.supabase.client.rpc('delete_increment', { p_increment_id: incrementId })).pipe(
+    return from(this.supabase.requireClient().rpc('delete_increment', { p_increment_id: incrementId })).pipe(
       map(({ error }) => {
         if (error) {
           throw error;
@@ -110,7 +110,7 @@ export class IncrementService {
   }
 
   getIncrementPublicUrl(path: string): string {
-    const { data } = this.supabase.client.storage.from('book-increments').getPublicUrl(path);
+    const { data } = this.supabase.requireClient().storage.from('book-increments').getPublicUrl(path);
     return data.publicUrl;
   }
 

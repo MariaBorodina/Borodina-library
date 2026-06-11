@@ -44,8 +44,7 @@ describe('RealmService', () => {
     const realms = options.realms !== undefined ? options.realms : mockRealmRows;
     const realmsError = options.realmsError ?? null;
 
-    return {
-      client: {
+    const client = {
         from: () => ({
           select: () => ({
             order: () => createThenable({ data: realms, error: realmsError }),
@@ -63,7 +62,12 @@ describe('RealmService', () => {
             }),
           }),
         }),
-      },
+      };
+
+    return {
+      isConfigured: true,
+      client,
+      requireClient: () => client,
     };
   }
 
@@ -98,7 +102,7 @@ describe('RealmService', () => {
     expect(realm).toBeUndefined();
   });
 
-  it('should return an empty list when Supabase fails', async () => {
+  it('should fall back to seed realms when Supabase fails', async () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -111,7 +115,8 @@ describe('RealmService', () => {
     service = TestBed.inject(RealmService);
 
     const realms = await firstValueFrom(service.getRealms());
-    expect(realms).toHaveLength(0);
+    expect(realms.length).toBeGreaterThan(0);
+    expect(realms.some((realm) => realm.slug === 'hard-sci-fi')).toBe(true);
   });
 
   it('should include realms with zero books from Supabase', async () => {
