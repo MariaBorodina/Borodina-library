@@ -70,4 +70,13 @@ describe('BrowseRealmsPage', () => {
     expect(skeletons.length).toBe(6);
     expect(fixture.nativeElement.querySelectorAll('app-realm-card').length).toBe(0);
   });
+
+  it('should call getRealms when the page is created', async () => {
+    const getRealms = vi.fn(() => of(mockRealms));
+
+    TestBed.resetTestingModule();
+    await createPage(getRealms);
+
+    expect(getRealms).toHaveBeenCalledTimes(1);
+  });
 });

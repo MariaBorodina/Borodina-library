@@ -1,41 +1,73 @@
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, of } from 'rxjs';
-import { SEED_REALMS } from '../data/realm.seed';
+import { firstValueFrom } from 'rxjs';
+import { RealmRow } from '../../shared/models/library.model';
 import { RealmService } from './realm.service';
 import { SupabaseService } from './supabase.service';
 
 describe('RealmService', () => {
   let service: RealmService;
 
-  const supabaseMock = {
-    client: {
-      from: () => ({
-        select: () => ({
-          order: () =>
-            Promise.resolve({
-              data: null,
-              error: new Error('offline'),
+  const mockRealmRows: RealmRow[] = [
+    {
+      id: 'realm-1',
+      slug: 'hard-sci-fi',
+      name: 'Hard Sci-Fi',
+      description: 'Stories grounded in rigorous science.',
+      sort_order: 1,
+      book_count: 5,
+    },
+    {
+      id: 'realm-9',
+      slug: 'time-travel-archives',
+      name: 'Time Travel Archives',
+      description: 'Chronicles that bend the timeline.',
+      sort_order: 9,
+      book_count: 0,
+    },
+  ];
+
+  function createSupabaseMock(
+    options: {
+      realms?: RealmRow[] | null;
+      realmsError?: Error;
+      slugRow?: RealmRow | null;
+      slugError?: Error;
+    } = {},
+  ) {
+    const realms = options.realms !== undefined ? options.realms : mockRealmRows;
+    const realmsError = options.realmsError ?? null;
+
+    return {
+      client: {
+        from: () => ({
+          select: () => ({
+            order: () => Promise.resolve({ data: realms, error: realmsError }),
+            eq: (_column: string, slug: string) => ({
+              maybeSingle: () => {
+                if (options.slugError) {
+                  return Promise.resolve({ data: null, error: options.slugError });
+                }
+                const row =
+                  options.slugRow !== undefined
+                    ? options.slugRow
+                    : (mockRealmRows.find((realm) => realm.slug === slug) ?? null);
+                return Promise.resolve({ data: row, error: null });
+              },
             }),
-          eq: () => ({
-            maybeSingle: () =>
-              Promise.resolve({
-                data: null,
-                error: new Error('offline'),
-              }),
           }),
         }),
-      }),
-    },
-  };
+      },
+    };
+  }
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [{ provide: SupabaseService, useValue: supabaseMock }],
+      providers: [{ provide: SupabaseService, useValue: createSupabaseMock() }],
     });
     service = TestBed.inject(RealmService);
   });
 
-  it('should return a non-empty list of realms', async () => {
+  it('should return realms from Supabase', async () => {
     const realms = await firstValueFrom(service.getRealms());
     expect(realms.length).toBeGreaterThan(0);
   });
@@ -59,15 +91,42 @@ describe('RealmService', () => {
     expect(realm).toBeUndefined();
   });
 
-  it('should include all nine seed realms when Supabase is unavailable', async () => {
+  it('should return an empty list when Supabase fails', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: SupabaseService,
+          useValue: createSupabaseMock({ realms: null, realmsError: new Error('offline') }),
+        },
+      ],
+    });
+    service = TestBed.inject(RealmService);
+
     const realms = await firstValueFrom(service.getRealms());
-    expect(realms).toHaveLength(9);
+    expect(realms).toHaveLength(0);
   });
 
-  it('should include realms with zero books for empty-detail testing', async () => {
+  it('should include realms with zero books from Supabase', async () => {
     const realms = await firstValueFrom(service.getRealms());
     const emptyRealm = realms.find((realm) => realm.slug === 'time-travel-archives');
     expect(emptyRealm?.name).toBe('Time Travel Archives');
     expect(emptyRealm?.bookCount).toBe(0);
+  });
+
+  it('should return cached realms on subsequent calls without refetching', async () => {
+    const supabaseMock = createSupabaseMock();
+    const fromSpy = vi.spyOn(supabaseMock.client, 'from');
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [{ provide: SupabaseService, useValue: supabaseMock }],
+    });
+    service = TestBed.inject(RealmService);
+
+    await firstValueFrom(service.getRealms());
+    await firstValueFrom(service.getRealms());
+
+    expect(fromSpy).toHaveBeenCalledTimes(1);
   });
 });

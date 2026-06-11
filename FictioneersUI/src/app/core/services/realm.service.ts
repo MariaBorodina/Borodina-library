@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { from, map, Observable, of } from 'rxjs';
+import { from, map, Observable, of, tap } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { SEED_REALMS } from '../data/realm.seed';
+// import { SEED_REALMS } from '../data/realm.seed';
 import { Realm } from '../../shared/models/realm.model';
 import { RealmRow } from '../../shared/models/library.model';
 import { environment } from '../../../environments/environment';
@@ -9,11 +9,20 @@ import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class RealmService {
+  private realmsCache: Realm[] | null = null;
+
   constructor(private readonly supabase: SupabaseService) {}
 
   getRealms(): Observable<Realm[]> {
+    if (this.realmsCache) {
+      return of(this.realmsCache);
+    }
+
     if (!environment.supabaseUrl) {
-      return of(SEED_REALMS);
+      // this.realmsCache = SEED_REALMS;
+      // return of(SEED_REALMS);
+      this.realmsCache = [];
+      return of([]);
     }
 
     return from(
@@ -28,13 +37,22 @@ export class RealmService {
         }
         return (data as RealmRow[]).map((row) => this.toRealm(row));
       }),
-      catchError(() => of(SEED_REALMS)),
+      tap((realms) => {
+        this.realmsCache = realms;
+      }),
+      catchError(() => {
+        // this.realmsCache = SEED_REALMS;
+        // return of(SEED_REALMS);
+        this.realmsCache = [];
+        return of([]);
+      }),
     );
   }
 
   getRealmBySlug(slug: string): Observable<Realm | undefined> {
     if (!environment.supabaseUrl) {
-      return of(SEED_REALMS.find((realm) => realm.slug === slug));
+      // return of(SEED_REALMS.find((realm) => realm.slug === slug));
+      return of(undefined);
     }
 
     return from(
@@ -50,7 +68,10 @@ export class RealmService {
         }
         return data ? this.toRealm(data as RealmRow) : undefined;
       }),
-      catchError(() => of(SEED_REALMS.find((realm) => realm.slug === slug))),
+      catchError(() => {
+        // return of(SEED_REALMS.find((realm) => realm.slug === slug));
+        return of(undefined);
+      }),
     );
   }
 

@@ -2,7 +2,7 @@ import { Book } from '../../shared/models/library.model';
 
 const now = '2025-06-01T00:00:00Z';
 
-/** Published books for offline/demo use; realm_id matches SEED_REALMS ids */
+/** Published books for offline/demo use; realm_id matches Supabase realm ids */
 export const SEED_BOOKS: Book[] = [
   {
     id: 'seed-book-1',
