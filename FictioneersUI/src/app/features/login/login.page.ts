@@ -1,7 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService, INVALID_CREDENTIALS_MESSAGE } from '../../core/services/auth.service';
+import {
+  AuthService,
+  INVALID_CREDENTIALS_MESSAGE,
+  SUPABASE_NOT_CONFIGURED_MESSAGE,
+} from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -20,6 +24,7 @@ export class LoginPage {
   protected isAuthorSignup = false;
   protected readonly errorMessage = signal('');
   protected readonly loading = signal(false);
+  protected readonly isConfigured = this.auth.isConfigured;
 
   toggleMode(): void {
     this.isSignUp = !this.isSignUp;
@@ -29,6 +34,12 @@ export class LoginPage {
   submit(event: Event): void {
     event.preventDefault();
     this.errorMessage.set('');
+
+    if (!this.isConfigured) {
+      this.errorMessage.set(SUPABASE_NOT_CONFIGURED_MESSAGE);
+      return;
+    }
+
     this.loading.set(true);
 
     const action = this.isSignUp
@@ -40,9 +51,11 @@ export class LoginPage {
 
     action.subscribe({
       next: () => {
-        this.loading.set(false);
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
-        void this.router.navigateByUrl(returnUrl);
+        void this.auth.waitForProfile().then(() => {
+          this.loading.set(false);
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
+          void this.router.navigateByUrl(returnUrl);
+        });
       },
       error: (err: Error) => {
         this.loading.set(false);

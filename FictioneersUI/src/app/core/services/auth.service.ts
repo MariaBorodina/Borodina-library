@@ -1,11 +1,13 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
-import { from, map, Observable, of } from 'rxjs';
+import { from, Observable, throwError } from 'rxjs';
 import { Profile } from '../../shared/models/library.model';
 import { SupabaseService } from './supabase.service';
 
 export const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password';
+export const SUPABASE_NOT_CONFIGURED_MESSAGE =
+  'Sign-in is unavailable. Configure Supabase to enable login.';
 
 export interface SignUpOptions {
   displayName?: string;
@@ -24,6 +26,10 @@ export class AuthService {
   readonly user = computed<User | null>(() => this.session()?.user ?? null);
   readonly isAuthenticated = computed(() => this.session() !== null);
   readonly isAuthor = computed(() => this.profile()?.is_author ?? false);
+
+  get isConfigured(): boolean {
+    return this.supabase.isConfigured;
+  }
 
   constructor(
     private readonly supabase: SupabaseService,
@@ -56,19 +62,34 @@ export class AuthService {
   }
 
   signIn(email: string, password: string): Observable<void> {
+    if (!this.isConfigured) {
+      return throwError(() => new Error(SUPABASE_NOT_CONFIGURED_MESSAGE));
+    }
+
     return from(
-      this.supabase.requireClient().auth.signInWithPassword({ email, password }).then(({ error }) => {
-        if (error) {
-          throw new Error(INVALID_CREDENTIALS_MESSAGE);
-        }
-      }),
+      this.supabase
+        .requireClient()
+        .auth.signInWithPassword({ email, password })
+        .then(async ({ data, error }) => {
+          if (error) {
+            throw new Error(INVALID_CREDENTIALS_MESSAGE);
+          }
+          if (data.session?.user) {
+            await this.loadProfile(data.session.user.id);
+          }
+        }),
     );
   }
 
   signUp(email: string, password: string, options: SignUpOptions = {}): Observable<void> {
+    if (!this.isConfigured) {
+      return throwError(() => new Error(SUPABASE_NOT_CONFIGURED_MESSAGE));
+    }
+
     return from(
-      this.supabase.requireClient().auth
-        .signUp({
+      this.supabase
+        .requireClient()
+        .auth.signUp({
           email,
           password,
           options: {
@@ -78,12 +99,27 @@ export class AuthService {
             },
           },
         })
-        .then(({ error }) => {
+        .then(async ({ data, error }) => {
           if (error) {
             throw new Error(error.message);
           }
+          if (data.session?.user) {
+            await this.loadProfile(data.session.user.id);
+          }
         }),
     );
+  }
+
+  /** Ensures profile is loaded for the current session (e.g. before author-guarded navigation). */
+  waitForProfile(): Promise<void> {
+    const userId = this.user()?.id;
+    if (!userId) {
+      return Promise.resolve();
+    }
+    if (this.profile()?.id === userId) {
+      return Promise.resolve();
+    }
+    return this.loadProfile(userId);
   }
 
   signOut(): Observable<void> {
