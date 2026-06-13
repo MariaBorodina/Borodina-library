@@ -52,6 +52,14 @@
     }
   }
 
+  .nav-link-btn {
+    @apply relative cursor-pointer border-0 bg-transparent p-0 font-sans text-[0.85rem] font-medium uppercase tracking-[0.08em] text-muted transition-colors duration-300;
+
+    &:hover {
+      @apply text-primary;
+    }
+  }
+
   .hero {
     @apply relative flex min-h-[92vh] items-center overflow-hidden px-16 max-[1024px]:px-8 max-[768px]:min-h-[80vh] max-[768px]:py-10;
   }
@@ -535,6 +543,78 @@
 
     &:focus {
       @apply border-primary/40;
+    }
+  }
+
+  .auth-card {
+    @apply mx-auto max-w-[420px] rounded-card border border-white/[0.06] bg-card-bg p-10 max-[768px]:p-8;
+
+    .page-title {
+      @apply mb-4 text-[clamp(2rem,5vw,3rem)];
+    }
+
+    .section-subtitle {
+      @apply max-w-none;
+    }
+  }
+
+  .auth-card__header {
+    @apply mb-8;
+  }
+
+  .auth-form {
+    @apply flex flex-col gap-5;
+  }
+
+  .auth-form__label {
+    @apply flex flex-col gap-2;
+  }
+
+  .auth-form__label-text {
+    @apply font-sans text-[0.85rem] font-medium uppercase tracking-[0.08em] text-muted;
+  }
+
+  .auth-form__input {
+    @apply w-full rounded-card border border-white/[0.08] bg-bg px-5 py-3.5 font-sans text-base text-text outline-none transition-colors duration-300;
+
+    &:focus {
+      @apply border-primary/40;
+    }
+  }
+
+  .auth-form__checkbox {
+    @apply flex cursor-pointer items-start gap-3 text-[0.95rem] font-light leading-snug text-muted;
+
+    input {
+      @apply mt-1 accent-primary;
+    }
+  }
+
+  .auth-form__notice {
+    @apply mb-6 rounded-card border border-primary/20 bg-primary/[0.06] px-5 py-4 text-[0.95rem] font-light leading-relaxed text-muted;
+  }
+
+  .auth-form__error {
+    @apply rounded-card border border-red-400/30 bg-red-950/20 px-5 py-4 text-[0.95rem] text-red-300;
+  }
+
+  .auth-form__success {
+    @apply rounded-card border border-primary/30 bg-primary/[0.08] px-5 py-4 text-[0.95rem] font-light leading-relaxed text-text;
+  }
+
+  .auth-form__submit {
+    @apply w-full disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .auth-form__footer {
+    @apply mt-6 text-center text-[0.95rem] font-light text-muted;
+  }
+
+  .auth-form__toggle {
+    @apply ml-1 cursor-pointer border-0 bg-transparent p-0 font-sans text-[0.95rem] text-primary underline transition-colors duration-300;
+
+    &:hover {
+      @apply text-text;
     }
   }
 }

@@ -1,68 +1,85 @@
-<section class="mx-auto max-w-md px-4 py-16">
-  <h1 class="mb-6 text-2xl font-semibold">{{ isSignUp ? 'Create account' : 'Log in' }}</h1>
+<section class="section">
+  <div class="auth-card">
+    <div class="auth-card__header">
+      @if (isSignUp) {
+        <h1 class="page-title">Create <span>account</span></h1>
+      } @else {
+        <h1 class="page-title">Log <span>in</span></h1>
+      }
+      <p class="section-subtitle">Access your saved books and author tools.</p>
+    </div>
 
-  <form (submit)="submit($event)" class="flex flex-col gap-4">
-    @if (isSignUp) {
-      <label class="flex flex-col gap-1">
-        <span>Display name</span>
+    @if (!isConfigured) {
+      <p class="auth-form__notice" role="status">{{ supabaseNotConfiguredMessage }}</p>
+    }
+
+    <form class="auth-form" (submit)="submit($event)">
+      @if (isSignUp) {
+        <label class="auth-form__label">
+          <span class="auth-form__label-text">Display name</span>
+          <input
+            type="text"
+            name="displayName"
+            class="auth-form__input"
+            [(ngModel)]="displayName"
+            autocomplete="name"
+          />
+        </label>
+        <label class="auth-form__checkbox">
+          <input type="checkbox" [(ngModel)]="isAuthorSignup" name="isAuthor" />
+          <span>I want to publish books as an author</span>
+        </label>
+      }
+
+      <label class="auth-form__label">
+        <span class="auth-form__label-text">Email</span>
         <input
-          type="text"
-          name="displayName"
-          [(ngModel)]="displayName"
-          class="rounded border px-3 py-2"
-          autocomplete="name"
+          type="email"
+          name="email"
+          class="auth-form__input"
+          required
+          [(ngModel)]="email"
+          autocomplete="email"
         />
       </label>
-      <label class="flex items-center gap-2">
-        <input type="checkbox" [(ngModel)]="isAuthorSignup" name="isAuthor" />
-        <span>I want to publish books as an author</span>
+
+      <label class="auth-form__label">
+        <span class="auth-form__label-text">Password</span>
+        <input
+          type="password"
+          name="password"
+          class="auth-form__input"
+          required
+          [(ngModel)]="password"
+          [attr.autocomplete]="isSignUp ? 'new-password' : 'current-password'"
+        />
       </label>
-    }
 
-    <label class="flex flex-col gap-1">
-      <span>Email</span>
-      <input
-        type="email"
-        name="email"
-        required
-        [(ngModel)]="email"
-        class="rounded border px-3 py-2"
-        autocomplete="email"
-      />
-    </label>
+      @if (successMessage()) {
+        <p class="auth-form__success" role="status">{{ successMessage() }}</p>
+      }
 
-    <label class="flex flex-col gap-1">
-      <span>Password</span>
-      <input
-        type="password"
-        name="password"
-        required
-        [(ngModel)]="password"
-        class="rounded border px-3 py-2"
-        autocomplete="{{ isSignUp ? 'new-password' : 'current-password' }}"
-      />
-    </label>
+      @if (errorMessage()) {
+        <p class="auth-form__error" role="alert">{{ errorMessage() }}</p>
+      }
 
-    @if (errorMessage()) {
-      <p class="text-red-600" role="alert">{{ errorMessage() }}</p>
-    }
+      <button
+        type="submit"
+        class="btn btn-primary auth-form__submit"
+        [disabled]="loading() || !isConfigured"
+      >
+        {{ loading() ? 'Please wait…' : isSignUp ? 'Sign up' : 'Log in' }}
+      </button>
+    </form>
 
-    <button
-      type="submit"
-      class="rounded bg-indigo-600 px-4 py-2 text-white disabled:opacity-50"
-      [disabled]="loading()"
-    >
-      {{ loading() ? 'Please wait…' : isSignUp ? 'Sign up' : 'Log in' }}
-    </button>
-  </form>
-
-  <p class="mt-4 text-sm">
-    @if (isSignUp) {
-      Already have an account?
-      <button type="button" class="text-indigo-600 underline" (click)="toggleMode()">Log in</button>
-    } @else {
-      New here?
-      <button type="button" class="text-indigo-600 underline" (click)="toggleMode()">Sign up</button>
-    }
-  </p>
+    <p class="auth-form__footer">
+      @if (isSignUp) {
+        Already have an account?
+        <button type="button" class="auth-form__toggle" (click)="toggleMode()">Log in</button>
+      } @else {
+        New here?
+        <button type="button" class="auth-form__toggle" (click)="toggleMode()">Sign up</button>
+      }
+    </p>
+  </div>
 </section>
