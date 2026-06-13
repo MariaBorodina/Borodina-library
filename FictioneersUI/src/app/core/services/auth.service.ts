@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, NgZone, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import type { AuthChangeEvent, AuthError, Session, User } from '@supabase/supabase-js';
 import { from, Observable, throwError } from 'rxjs';
@@ -102,6 +102,8 @@ export class AuthService {
     return this.supabase.isConfigured;
   }
 
+  private readonly ngZone = inject(NgZone);
+
   constructor(
     private readonly supabase: SupabaseService,
     private readonly router: Router,
@@ -123,12 +125,18 @@ export class AuthService {
     this.loadingSignal.set(false);
 
     this.supabase.requireClient().auth.onAuthStateChange((_event: AuthChangeEvent, session) => {
-      this.sessionSignal.set(session);
-      if (session?.user) {
-        void this.loadProfile(session.user.id);
-      } else {
-        this.profileSignal.set(null);
+      if (session !== null && !this.hasPersistedSession()) {
+        return;
       }
+
+      this.ngZone.run(() => {
+        this.sessionSignal.set(session);
+        if (session?.user) {
+          void this.loadProfile(session.user.id);
+        } else {
+          this.profileSignal.set(null);
+        }
+      });
     });
   }
 
@@ -220,15 +228,53 @@ export class AuthService {
     return this.loadProfile(userId);
   }
 
-  signOut(): Observable<void> {
-    return from(
-      this.supabase.requireClient().auth.signOut().then(({ error }) => {
-        if (error) {
-          throw new Error(error.message);
+  signOut(): void {
+    void this.performSignOut();
+  }
+
+  private async performSignOut(): Promise<void> {
+    this.clearSession();
+    await this.router.navigateByUrl('/');
+
+    if (!this.isConfigured) {
+      return;
+    }
+
+    void this.supabase
+      .requireClient()
+      .auth.signOut({ scope: 'local' })
+      .catch((err: unknown) => {
+        console.warn('Background sign-out failed.', err);
+      });
+  }
+
+  private clearSession(): void {
+    this.removePersistedSession();
+    this.ngZone.run(() => {
+      this.sessionSignal.set(null);
+      this.profileSignal.set(null);
+    });
+  }
+
+  private removePersistedSession(): void {
+    for (const storage of [localStorage, sessionStorage]) {
+      for (const key of Object.keys(storage)) {
+        if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          storage.removeItem(key);
         }
-        void this.router.navigateByUrl('/');
-      }),
-    );
+      }
+    }
+  }
+
+  private hasPersistedSession(): boolean {
+    for (const storage of [localStorage, sessionStorage]) {
+      for (const key of Object.keys(storage)) {
+        if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   resetPassword(email: string): Observable<void> {
