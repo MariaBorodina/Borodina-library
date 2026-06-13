@@ -34,8 +34,7 @@ describe('BookService', () => {
     const books = options.books !== undefined ? options.books : mockBooks;
     const error = options.error ?? null;
 
-    return {
-      client: {
+    const client = {
         from: () => ({
           select: () => ({
             eq: () => ({
@@ -46,7 +45,12 @@ describe('BookService', () => {
             }),
           }),
         }),
-      },
+      };
+
+    return {
+      isConfigured: true,
+      client,
+      requireClient: () => client,
     };
   }
 

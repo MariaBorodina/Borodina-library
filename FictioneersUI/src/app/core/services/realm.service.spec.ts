@@ -44,12 +44,11 @@ describe('RealmService', () => {
     const realms = options.realms !== undefined ? options.realms : mockRealmRows;
     const realmsError = options.realmsError ?? null;
 
-    return {
-      client: {
+    const client = {
         from: () => ({
           select: () => ({
             order: () => createThenable({ data: realms, error: realmsError }),
-            eq: (_column: string, slug: string) => ({
+            eq: (column: string, value: string) => ({
               maybeSingle: () => {
                 if (options.slugError) {
                   return createThenable({ data: null, error: options.slugError });
@@ -57,13 +56,20 @@ describe('RealmService', () => {
                 const row =
                   options.slugRow !== undefined
                     ? options.slugRow
-                    : (mockRealmRows.find((realm) => realm.slug === slug) ?? null);
+                    : column === 'id'
+                      ? (mockRealmRows.find((realm) => realm.id === value) ?? null)
+                      : (mockRealmRows.find((realm) => realm.slug === value) ?? null);
                 return createThenable({ data: row, error: null });
               },
             }),
           }),
         }),
-      },
+      };
+
+    return {
+      isConfigured: true,
+      client,
+      requireClient: () => client,
     };
   }
 
@@ -93,12 +99,35 @@ describe('RealmService', () => {
     expect(realm?.name).toBe('Hard Sci-Fi');
   });
 
+  it('should find a realm by id', async () => {
+    const realm = await firstValueFrom(service.getRealmById('realm-1'));
+    expect(realm?.name).toBe('Hard Sci-Fi');
+    expect(realm?.slug).toBe('hard-sci-fi');
+  });
+
+  it('should return undefined for an unknown realm id', async () => {
+    const realm = await firstValueFrom(service.getRealmById('unknown-id'));
+    expect(realm).toBeUndefined();
+  });
+
+  it('should return seed realm by id when Supabase is not configured', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [{ provide: SupabaseService, useValue: { isConfigured: false, requireClient: () => { throw new Error(); } } }],
+    });
+    service = TestBed.inject(RealmService);
+
+    const realm = await firstValueFrom(service.getRealmById('8'));
+    expect(realm?.name).toBe('Dragon Realms');
+    expect(realm?.slug).toBe('dragon-realms');
+  });
+
   it('should return undefined for an unknown slug', async () => {
     const realm = await firstValueFrom(service.getRealmBySlug('unknown-realm'));
     expect(realm).toBeUndefined();
   });
 
-  it('should return an empty list when Supabase fails', async () => {
+  it('should fall back to seed realms when Supabase fails', async () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -111,7 +140,8 @@ describe('RealmService', () => {
     service = TestBed.inject(RealmService);
 
     const realms = await firstValueFrom(service.getRealms());
-    expect(realms).toHaveLength(0);
+    expect(realms.length).toBeGreaterThan(0);
+    expect(realms.some((realm) => realm.slug === 'hard-sci-fi')).toBe(true);
   });
 
   it('should include realms with zero books from Supabase', async () => {

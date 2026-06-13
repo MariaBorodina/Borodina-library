@@ -430,6 +430,58 @@
     @apply h-[200px] animate-pulse rounded-card border border-white/[0.04] bg-white/[0.03];
   }
 
+  .book-info-detail {
+    @apply grid grid-cols-[1fr_1.4fr] items-start gap-12 max-[768px]:grid-cols-1 max-[768px]:gap-8;
+  }
+
+  .book-info__cover-wrap {
+    @apply max-w-[320px] overflow-hidden rounded-card border border-white/[0.06] max-[768px]:mx-auto max-[768px]:max-w-[280px];
+  }
+
+  .book-info__meta {
+    @apply min-w-0;
+  }
+
+  .book-info__tags {
+    @apply mb-4 flex flex-wrap gap-2;
+  }
+
+  .book-tag {
+    @apply inline-block rounded-pill bg-white/[0.04] px-3.5 py-1.5 text-[0.7rem] font-medium uppercase tracking-[0.05em] text-secondary;
+  }
+
+  .book-info__synopsis {
+    @apply mb-8 text-[1.05rem] font-light leading-[1.8] text-muted;
+  }
+
+  .book-info__error {
+    @apply mb-6 rounded-card border border-white/[0.06] bg-card-bg p-6 text-[0.95rem] font-light text-muted;
+  }
+
+  .book-info-skeleton {
+    @apply grid grid-cols-[1fr_1.4fr] gap-12 max-[768px]:grid-cols-1 max-[768px]:gap-8;
+  }
+
+  .book-info-skeleton__cover {
+    @apply aspect-[2/3] max-w-[320px] animate-pulse rounded-card border border-white/[0.04] bg-white/[0.03] max-[768px]:mx-auto max-[768px]:max-w-[280px];
+  }
+
+  .book-info-skeleton__content {
+    @apply flex flex-col gap-4 pt-4;
+  }
+
+  .book-info-skeleton__line {
+    @apply h-5 animate-pulse rounded-pill bg-white/[0.04];
+
+    &--short {
+      @apply w-1/4;
+    }
+
+    &--medium {
+      @apply w-3/5;
+    }
+  }
+
   .search-form {
     @apply mb-12 flex max-w-[720px] flex-wrap gap-4;
   }

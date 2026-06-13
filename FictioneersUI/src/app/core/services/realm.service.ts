@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { from, map, Observable, of, tap } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-// import { SEED_REALMS } from '../data/realm.seed';
+import { SEED_REALMS } from '../data/realm.seed';
 import { Realm } from '../../shared/models/realm.model';
 import { RealmRow } from '../../shared/models/library.model';
-import { environment } from '../../../environments/environment';
 import { SupabaseService } from './supabase.service';
 import { fromSupabaseQuery, withAbortSignal } from './supabase-observable';
 
@@ -19,15 +18,13 @@ export class RealmService {
       return of(this.realmsCache);
     }
 
-    if (!environment.supabaseUrl) {
-      // this.realmsCache = SEED_REALMS;
-      // return of(SEED_REALMS);
-      this.realmsCache = [];
-      return of([]);
+    if (!this.supabase.isConfigured) {
+      this.realmsCache = SEED_REALMS;
+      return of(SEED_REALMS);
     }
 
     return from(
-      this.supabase.client
+      this.supabase.requireClient()
         .from('realms_with_book_count')
         .select('id, slug, name, description, book_count')
         .order('sort_order'),
@@ -42,22 +39,40 @@ export class RealmService {
         this.realmsCache = realms;
       }),
       catchError(() => {
-        // this.realmsCache = SEED_REALMS;
-        // return of(SEED_REALMS);
-        this.realmsCache = [];
-        return of([]);
+        this.realmsCache = SEED_REALMS;
+        return of(SEED_REALMS);
       }),
     );
   }
 
-  getRealmBySlug(slug: string): Observable<Realm | undefined> {
-    if (!environment.supabaseUrl) {
-      // return of(SEED_REALMS.find((realm) => realm.slug === slug));
-      return of(undefined);
+  getRealmById(id: string): Observable<Realm | undefined> {
+    if (!this.supabase.isConfigured) {
+      return of(SEED_REALMS.find((realm) => realm.id === id));
     }
 
     return fromSupabaseQuery<Realm | undefined>((signal) => {
-      const builder = this.supabase.client
+      const builder = this.supabase.requireClient()
+        .from('realms_with_book_count')
+        .select('id, slug, name, description, book_count')
+        .eq('id', id)
+        .maybeSingle();
+
+      return withAbortSignal(builder, signal).then(({ data, error }) => ({
+        data: data ? this.toRealm(data as RealmRow) : undefined,
+        error,
+      }));
+    }).pipe(
+      catchError(() => of(SEED_REALMS.find((realm) => realm.id === id))),
+    );
+  }
+
+  getRealmBySlug(slug: string): Observable<Realm | undefined> {
+    if (!this.supabase.isConfigured) {
+      return of(SEED_REALMS.find((realm) => realm.slug === slug));
+    }
+
+    return fromSupabaseQuery<Realm | undefined>((signal) => {
+      const builder = this.supabase.requireClient()
         .from('realms_with_book_count')
         .select('id, slug, name, description, book_count')
         .eq('slug', slug)

@@ -1,12 +1,55 @@
 <section class="section">
   @if (loading()) {
-    <div class="realm-detail-skeleton" aria-busy="true" aria-label="Loading book"></div>
+    <div class="book-info-skeleton" aria-busy="true" aria-label="Loading book">
+      <div class="book-info-skeleton__cover"></div>
+      <div class="book-info-skeleton__content">
+        <div class="book-info-skeleton__line book-info-skeleton__line--short"></div>
+        <div class="book-info-skeleton__line"></div>
+        <div class="book-info-skeleton__line"></div>
+        <div class="book-info-skeleton__line book-info-skeleton__line--medium"></div>
+      </div>
+    </div>
   } @else if (book(); as currentBook) {
-    <div class="section-header">
-      <div>
-        <a routerLink="/realms" class="realm-detail__back">← Browse Realms</a>
+    <a
+      [routerLink]="realm() ? ['/realms', realm()!.slug] : ['/realms']"
+      class="realm-detail__back"
+    >
+      ← {{ realm()?.name ?? 'Browse Realms' }}
+    </a>
+
+    <div class="book-info-detail">
+      <div class="book-info__cover-wrap">
+        @if (coverUrl(); as url) {
+          <img [src]="url" [alt]="currentBook.title" class="book-cover" />
+        } @else {
+          <div class="book-cover book-cover--placeholder" [attr.aria-label]="currentBook.title"></div>
+        }
+      </div>
+
+      <div class="book-info__meta">
+        @if (currentBook.tags.length > 0) {
+          <div class="book-info__tags">
+            @for (tag of currentBook.tags; track tag) {
+              <span class="book-tag">{{ tag }}</span>
+            }
+          </div>
+        }
+
         <h1 class="page-title">{{ currentBook.title }}</h1>
-        <p class="section-subtitle">Book details and reading experience coming soon.</p>
+        <p class="book-author">by {{ authorName() || 'Unknown author' }}</p>
+        <p class="book-info__synopsis">
+          {{ currentBook.synopsis || '[No description available]' }}
+        </p>
+
+        @if (readError()) {
+          <div class="book-info__error" role="alert">
+            Something went wrong. Please try again later.
+          </div>
+        }
+
+        <button type="button" class="btn btn-primary" (click)="startReading()">
+          Start reading
+        </button>
       </div>
     </div>
   } @else {

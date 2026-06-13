@@ -4,8 +4,16 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
-  readonly client: SupabaseClient = createClient(
-    environment.supabaseUrl,
-    environment.supabaseAnonKey,
-  );
+  readonly isConfigured = !!environment.supabaseUrl;
+
+  readonly client: SupabaseClient | null = this.isConfigured
+    ? createClient(environment.supabaseUrl, environment.supabaseAnonKey)
+    : null;
+
+  requireClient(): SupabaseClient {
+    if (!this.client) {
+      throw new Error('Supabase is not configured');
+    }
+    return this.client;
+  }
 }

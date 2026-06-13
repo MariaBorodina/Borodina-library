@@ -33,14 +33,19 @@ export class AuthService {
   }
 
   private async init(): Promise<void> {
-    const { data } = await this.supabase.client.auth.getSession();
+    if (!this.supabase.isConfigured) {
+      this.loadingSignal.set(false);
+      return;
+    }
+
+    const { data } = await this.supabase.requireClient().auth.getSession();
     this.sessionSignal.set(data.session);
     if (data.session?.user) {
       await this.loadProfile(data.session.user.id);
     }
     this.loadingSignal.set(false);
 
-    this.supabase.client.auth.onAuthStateChange((_event: AuthChangeEvent, session) => {
+    this.supabase.requireClient().auth.onAuthStateChange((_event: AuthChangeEvent, session) => {
       this.sessionSignal.set(session);
       if (session?.user) {
         void this.loadProfile(session.user.id);
@@ -52,7 +57,7 @@ export class AuthService {
 
   signIn(email: string, password: string): Observable<void> {
     return from(
-      this.supabase.client.auth.signInWithPassword({ email, password }).then(({ error }) => {
+      this.supabase.requireClient().auth.signInWithPassword({ email, password }).then(({ error }) => {
         if (error) {
           throw new Error(INVALID_CREDENTIALS_MESSAGE);
         }
@@ -62,7 +67,7 @@ export class AuthService {
 
   signUp(email: string, password: string, options: SignUpOptions = {}): Observable<void> {
     return from(
-      this.supabase.client.auth
+      this.supabase.requireClient().auth
         .signUp({
           email,
           password,
@@ -83,7 +88,7 @@ export class AuthService {
 
   signOut(): Observable<void> {
     return from(
-      this.supabase.client.auth.signOut().then(({ error }) => {
+      this.supabase.requireClient().auth.signOut().then(({ error }) => {
         if (error) {
           throw new Error(error.message);
         }
@@ -94,7 +99,7 @@ export class AuthService {
 
   resetPassword(email: string): Observable<void> {
     return from(
-      this.supabase.client.auth
+      this.supabase.requireClient().auth
         .resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/login` })
         .then(({ error }) => {
           if (error) {
@@ -119,7 +124,7 @@ export class AuthService {
   }
 
   private async loadProfile(userId: string): Promise<void> {
-    const { data, error } = await this.supabase.client
+    const { data, error } = await this.supabase.requireClient()
       .from('profiles')
       .select('id, display_name, is_author, storage_bytes_used, created_at')
       .eq('id', userId)

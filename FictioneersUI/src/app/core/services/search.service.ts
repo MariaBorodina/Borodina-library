@@ -9,7 +9,7 @@ export class SearchService {
 
   searchBooks(query: string, limit = 50): Observable<Book[]> {
     return from(
-      this.supabase.client.rpc('search_books', {
+      this.supabase.requireClient().rpc('search_books', {
         p_query: query.trim(),
         p_limit: limit,
       }),
