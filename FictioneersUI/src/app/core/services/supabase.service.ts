@@ -7,7 +7,14 @@ export class SupabaseService {
   readonly isConfigured = !!environment.supabaseUrl;
 
   readonly client: SupabaseClient | null = this.isConfigured
-    ? createClient(environment.supabaseUrl, environment.supabaseAnonKey)
+    ? createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: 'pkce',
+        },
+      })
     : null;
 
   requireClient(): SupabaseClient {
