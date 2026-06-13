@@ -83,40 +83,42 @@ flowchart LR
 
 | Area | Status |
 |------|--------|
-| Route `/login` → `LoginPage` | ✅ Exists (`app.routes.ts`) |
-| Nav “Log in” link | ✅ `app-shell.component.html` |
-| Email + password fields | ✅ `login.page.html` |
-| “Log in” submit button | ✅ Label toggles to “Sign up” in signup mode |
-| Sign-up link (“New here? Sign up”) | ✅ Toggle on same page |
-| `AuthService.signIn` / `signUp` | ✅ Supabase `signInWithPassword` / `signUp` |
-| Profile creation on signup | ✅ DB trigger `handle_new_user` reads `display_name`, `is_author` metadata |
-| `returnUrl` redirect after login | ✅ `login.page.ts` reads query param |
+| Route `/login` → `LoginPage` | ✅ `app.routes.ts` |
+| Nav “Log in” / “Log out” + role-based links | ✅ `app-shell.component.html` |
+| Email + password fields + sign-up toggle | ✅ `login.page.html` |
+| `AuthService.signIn` / `signUp` / optimistic `signOut` | ✅ Supabase + local session clear |
+| Profile creation on signup | ✅ DB trigger `handle_new_user` |
+| `returnUrl` redirect after login | ✅ `login.page.ts` |
 | Guard redirect to `/login?returnUrl=…` | ✅ `auth.guard.ts`, `author.guard.ts` |
+| `authGuard` waits for session load | ✅ `toObservable(auth.loading)` |
 | US‑R‑01 error message | ✅ `INVALID_CREDENTIALS_MESSAGE` |
-| Author signup checkbox | ✅ Extra field for Journey 2 — not required by US‑P‑09 but keep |
-| Chronicles design system styling | ⚠️ **Gap** — page uses generic Tailwind (`indigo-600`), not `.section` / `.btn-primary` |
-| `login.page.spec.ts` | ❌ Missing |
-| Redirect if already authenticated | ❌ Missing — logged-in user can open `/login` |
-| Supabase-not-configured UX | ❌ Missing — `environment.supabaseUrl` is empty in dev; submit throws |
-| `environment.ts` typo | ⚠️ `asupabaseUrl` holds URL; `supabaseUrl: ''` disables auth |
-| Auth session loading vs guards | ⚠️ `authGuard` returns `true` while `auth.loading()` — brief flash possible |
-| Password reset link | ❌ Not in UI (`AuthService.resetPassword` exists) |
-| Social login | ❌ Out of scope (journey improvement) |
+| Author signup checkbox + `?mode=signup` | ✅ Same-page toggle |
+| Chronicles design system styling | ✅ `.section`, `.auth-card`, `.auth-form__*` |
+| `login.page.spec.ts` | ✅ 10 tests |
+| `auth.guard.spec.ts` | ✅ 3 tests |
+| Redirect if already authenticated | ✅ `login.page.ts` effect |
+| Supabase-not-configured UX | ✅ Banner + disabled submit |
+| `environment.ts` Supabase URL | ✅ `supabaseUrl` + `supabaseAnonKey` |
+| Password reset link | ❌ Out of scope — `resetPassword` exists |
+| Social login | ❌ Out of scope |
 
-### Key files (existing)
+### Key files (shipped)
 
 ```
 FictioneersUI/src/app/
 ├── app.routes.ts                           # /login route (no guard)
 ├── features/login/
-│   ├── login.page.ts                       # submit, toggle signup, returnUrl
-│   └── login.page.html                     # form — needs design-system pass
+│   ├── login.page.ts                       # submit, toggle signup, returnUrl, auth redirect
+│   ├── login.page.html                     # Chronicles auth card
+│   └── login.page.spec.ts                  # 10 unit tests
 ├── core/services/auth.service.ts           # session signals, signIn/signUp/signOut
 ├── core/services/supabase.service.ts       # isConfigured gate
-├── core/guards/auth.guard.ts               # redirect + returnUrl
+├── core/guards/
+│   ├── auth.guard.ts                       # wait-for-session + returnUrl redirect
+│   └── auth.guard.spec.ts                  # 3 unit tests
 └── layout/app-shell/
     ├── app-shell.component.html            # Log in / Log out / role-based links
-    └── app-shell.component.ts              # logout()
+    └── app-shell.component.ts              # logout(), direct signal bindings
 
 supabase/migrations/
 └── 20250608100200_triggers_functions.sql   # handle_new_user trigger
@@ -256,49 +258,50 @@ DB trigger `handle_new_user` inserts into `public.profiles` — no client-side p
 
 ### `login.page.ts`
 
-- [ ] Inject `SupabaseService` (or expose `auth.isConfigured` on `AuthService`) for offline banner.
-- [ ] On init: if `auth.isAuthenticated()`, redirect to `returnUrl ?? '/'` (skip form for logged-in users).
-- [ ] Optional: read `?mode=signup` query param to open in signup mode (author onboarding link).
-- [ ] Guard submit when `!supabase.isConfigured` — set error message, do not call API.
-- [ ] Keep `returnUrl` from `ActivatedRoute.snapshot` (or `queryParamMap` subscription if slug changes matter).
-- [ ] After successful login, wait for profile load if nav depends on `isAuthor` (see note below).
-- [ ] Preserve email on error; keep password filled (US‑R‑01 allows “remains for retry”).
+- [x] Inject `SupabaseService` (or expose `auth.isConfigured` on `AuthService`) for offline banner.
+- [x] On init: if `auth.isAuthenticated()`, redirect to `returnUrl ?? '/'` (skip form for logged-in users).
+- [x] Optional: read `?mode=signup` query param to open in signup mode (author onboarding link).
+- [x] Guard submit when `!supabase.isConfigured` — set error message, do not call API.
+- [x] Keep `returnUrl` from `ActivatedRoute.snapshot` (or `queryParamMap` subscription if slug changes matter).
+- [x] After successful login, wait for profile load if nav depends on `isAuthor` (see note below).
+- [x] Preserve email on error; keep password filled (US‑R‑01 allows “remains for retry”).
 
 **Profile load timing:** `onAuthStateChange` loads profile asynchronously. If author lands on `/books-by-me` immediately, `authorGuard` may run before profile loads. **Mitigation:** in `signIn`/`signUp` success handler, await `auth.loadProfile()` (expose package-private method or return profile from sign-in observable) before navigating when `returnUrl` is author-only.
 
 ### `login.page.html`
 
-- [ ] Wrap in `<section class="section">` + `.auth-card`.
-- [ ] Use design-system classes (remove inline `indigo-600`, `max-w-md` ad-hoc Tailwind where globals exist).
-- [ ] `autocomplete="email"`, `autocomplete="current-password"` / `new-password`.
-- [ ] `@if (!isConfigured)` config warning above form.
-- [ ] Error block with `role="alert"`.
-- [ ] Submit button: `.btn.btn-primary`, `[disabled]="loading() || !isConfigured"`.
-- [ ] Sign-up toggle link at bottom (keep existing behavior).
+- [x] Wrap in `<section class="section">` + `.auth-card`.
+- [x] Use design-system classes (remove inline `indigo-600`, `max-w-md` ad-hoc Tailwind where globals exist).
+- [x] `autocomplete="email"`, `autocomplete="current-password"` / `new-password`.
+- [x] `@if (!isConfigured)` config warning above form.
+- [x] Error block with `role="alert"`.
+- [x] Submit button: `.btn.btn-primary`, `[disabled]="loading() || !isConfigured"`.
+- [x] Sign-up toggle link at bottom (keep existing behavior).
 
 ### `styles.scss`
 
-- [ ] `.auth-card` — centered, max-width ~420px, padding, border consistent with app cards.
-- [ ] `.auth-form` — flex column, gap.
-- [ ] `.auth-form__input` — match `.search-form__input`.
-- [ ] `.auth-form__error` — visible error state.
-- [ ] `.auth-form__toggle` — text button for mode switch.
-- [ ] `.nav-link-btn` — if missing, style logout button like nav links (may already inherit).
+- [x] `.auth-card` — centered, max-width ~420px, padding, border consistent with app cards.
+- [x] `.auth-form` — flex column, gap.
+- [x] `.auth-form__input` — match `.search-form__input`.
+- [x] `.auth-form__error` — visible error state.
+- [x] `.auth-form__toggle` — text button for mode switch.
+- [x] `.nav-link-btn` — if missing, style logout button like nav links (may already inherit).
 
 ### `auth.service.ts` (minimal tweaks)
 
-- [ ] Add readonly `isConfigured` computed from `SupabaseService`.
-- [ ] Optionally expose `waitForProfile(): Promise<void>` after sign-in for guard-safe navigation.
-- [ ] Keep generic `INVALID_CREDENTIALS_MESSAGE` for all sign-in failures (US‑R‑01).
+- [x] Add readonly `isConfigured` computed from `SupabaseService`.
+- [x] Optionally expose `waitForProfile(): Promise<void>` after sign-in for guard-safe navigation.
+- [x] Keep generic `INVALID_CREDENTIALS_MESSAGE` for all sign-in failures (US‑R‑01).
+- [x] Optimistic `signOut()` — clear signals + `localStorage` immediately; background Supabase call.
 
 ### `auth.guard.ts` (optional hardening — separate small task)
 
-- [ ] Replace `if (auth.loading()) return true` with wait-for-session resolver or functional guard that returns `Observable`/`Promise` until `loading()` is false — prevents flash of protected content. Can ship with US‑P‑09 or US‑P‑15.
+- [x] Replace `if (auth.loading()) return true` with wait-for-session resolver or functional guard that returns `Observable`/`Promise` until `loading()` is false — prevents flash of protected content. Can ship with US‑P‑09 or US‑P‑15.
 
 ### Environment
 
-- [ ] Fix `environment.ts`: set `supabaseUrl` to project URL (remove stray `asupabaseUrl` typo) so local login works against Supabase Cloud.
-- [ ] Document that anon browsing works with empty URL; auth requires configured Supabase.
+- [x] Fix `environment.ts`: set `supabaseUrl` to project URL (remove stray `asupabaseUrl` typo) so local login works against Supabase Cloud.
+- [x] Document that anon browsing works with empty URL; auth requires configured Supabase.
 
 ### Tests — `login.page.spec.ts`
 
@@ -321,10 +324,10 @@ Mock `AuthService`, `SupabaseService`, `Router`, `ActivatedRoute`.
 
 ### Regression
 
-- [ ] `app-shell` still shows “Log in” when logged out.
-- [ ] Protected routes still redirect to `/login?returnUrl=…`.
-- [ ] No pages or nav elements removed.
-- [ ] `ng build` and `npx ng test --no-watch` succeed.
+- [x] `app-shell` still shows “Log in” when logged out.
+- [x] Protected routes still redirect to `/login?returnUrl=…`.
+- [x] No pages or nav elements removed.
+- [x] `ng build` and `npx ng test --no-watch` succeed (78 tests).
 
 ---
 
@@ -369,18 +372,19 @@ npm run build
 
 ## Acceptance Verification Checklist
 
-- [ ] “Log in” nav opens login form (page at `/login`)
-- [ ] Email field visible and required
-- [ ] Password field visible and required
-- [ ] “Log in” (or Submit) button visible and clickable
-- [ ] Link/toggle to sign up for new users
-- [ ] US‑R‑01: invalid credentials show **Invalid email or password**
-- [ ] Successful login updates nav per US‑P‑15 (My Books / Books by me / Log out)
-- [ ] `returnUrl` honored after login (FR‑C‑01 partial)
-- [ ] Styled consistently with Chronicles design system
-- [ ] Works when Supabase configured; graceful message when not
-- [ ] No existing pages or elements removed
-- [ ] Unit tests added and passing
+- [x] “Log in” nav opens login form (page at `/login`)
+- [x] Email field visible and required
+- [x] Password field visible and required
+- [x] “Log in” (or Submit) button visible and clickable
+- [x] Link/toggle to sign up for new users
+- [x] US‑R‑01: invalid credentials show **Invalid email or password**
+- [x] Successful login updates nav per US‑P‑15 (My Books / Books by me / Log out)
+- [x] `returnUrl` honored after login (FR‑C‑01 partial)
+- [x] Styled consistently with Chronicles design system
+- [x] Works when Supabase configured; graceful message when not
+- [x] No existing pages or elements removed
+- [x] Unit tests added and passing
+- [x] Log out clears nav immediately (optimistic local sign-out)
 
 ---
 
@@ -388,29 +392,29 @@ npm run build
 
 ### Phase 1 — Environment & service readiness (≈15 min)
 
-1. Fix `environment.ts` `supabaseUrl` (remove typo key).
-2. Add `AuthService.isConfigured` (or use `SupabaseService` in page).
-3. Optional: `waitForProfile()` after sign-in for author `returnUrl`.
+1. Fix `environment.ts` `supabaseUrl` (remove typo key). ✅
+2. Add `AuthService.isConfigured` (or use `SupabaseService` in page). ✅
+3. Optional: `waitForProfile()` after sign-in for author `returnUrl`. ✅
 
 ### Phase 2 — UI & design system (≈45 min)
 
-1. Restyle `login.page.html` with `.section`, `.auth-card`, `.btn-primary`.
-2. Add `.auth-form__*` styles to `styles.scss`.
-3. Redirect authenticated users away from `/login`.
-4. Supabase-not-configured banner.
+1. Restyle `login.page.html` with `.section`, `.auth-card`, `.btn-primary`. ✅
+2. Add `.auth-form__*` styles to `styles.scss`. ✅
+3. Redirect authenticated users away from `/login`. ✅
+4. Supabase-not-configured banner. ✅
 
 ### Phase 3 — Tests & guard polish (≈45 min)
 
-1. Create `login.page.spec.ts` (full checklist above).
-2. Optional: improve `authGuard` session wait (coordinate with US‑P‑15).
-3. Manual walkthrough: Reader Journey stage 12; Author Journey stages 1, 2, 15.
+1. Create `login.page.spec.ts` (full checklist above). ✅
+2. Optional: improve `authGuard` session wait (coordinate with US‑P‑15). ✅
+3. Manual walkthrough: Reader Journey stage 12; Author Journey stages 1, 2, 15. ✅
 
 ### Phase 4 — Documentation & handoff (≈10 min)
 
-1. Update this file’s **Implementation Summary** table when complete.
-2. Note any follow-ups for US‑P‑10 / US‑P‑11 empty states.
+1. Update this file’s **Implementation Summary** table when complete. ✅
+2. Note any follow-ups for US‑P‑10 / US‑P‑11 empty states. ✅
 
-**Estimated total:** ~2 hours (core already ~60% done).
+**Estimated total:** ~2 hours — **complete**.
 
 ---
 
@@ -437,13 +441,65 @@ npm run build
 | `/login` route + form fields | ✅ Complete |
 | Sign-up toggle + author checkbox | ✅ Complete |
 | `AuthService` + Supabase auth | ✅ Complete |
+| `AuthService.isConfigured` | ✅ Complete |
+| Profile load before post-login redirect | ✅ Complete |
+| `environment.ts` URL fix | ✅ Complete |
 | Nav “Log in” + guards + `returnUrl` | ✅ Complete |
 | US‑R‑01 error message | ✅ Complete |
-| Chronicles design system styling | ❌ Not started |
-| Authenticated-user redirect | ❌ Not started |
-| Supabase-not-configured UX | ❌ Not started |
-| `environment.ts` URL fix | ❌ Not started |
-| Profile await before author redirect | ❌ Not started |
-| `login.page.spec.ts` | ❌ Not started |
+| Supabase-not-configured guard on submit | ✅ Complete (login page) |
+| Chronicles design system styling | ✅ Complete |
+| Authenticated-user redirect | ✅ Complete |
+| Supabase-not-configured banner in UI | ✅ Complete |
+| `login.page.spec.ts` | ✅ Complete (10 tests) |
+| `auth.guard.spec.ts` | ✅ Complete (3 tests) |
+| `authGuard` session wait | ✅ Complete |
+| Optimistic `signOut` + nav signal bindings | ✅ Complete |
+| Email confirmation pending flow | ✅ Complete (`EMAIL_CONFIRMATION_SENT_MESSAGE`) |
 
-**US‑P‑09 status: Partially implemented — polish, env fix, tests, and design-system alignment remaining.**
+**US‑P‑09 status: ✅ Complete**
+
+---
+
+## Handoff — downstream stories (US‑P‑10 / US‑P‑11)
+
+Login and auth plumbing are done. Protected routes (`/my-books`, `/books-by-me`) and nav role links work after sign-in. The destination pages exist as **stubs** — implement full UX in the next stories.
+
+### US‑P‑10: My Books (`/my-books`)
+
+| Item | Current state | Next story work |
+|------|---------------|-----------------|
+| Route + `authGuard` | ✅ Wired via login `returnUrl` | — |
+| Page shell | ✅ `my-books.page.ts` loads saved books | — |
+| Empty state | ⚠️ Plain text + “Browse books” link (`my-books.page.html`) | Align with Chronicles design system (`.section`, `.page-title`, card grid); use `app-book-card`; meet US‑R‑05 recovery pattern |
+| Book list | ⚠️ Title/synopsis only — no covers, no “resume reading” | Add cover, author, link to `/books/:id` and reading flow |
+| Save-book action | ❌ No “save to library” on book-info yet | Required for non-empty state — separate story / US‑R‑05 |
+| Tests | ❌ No `my-books.page.spec.ts` | Add per US‑P‑10 spec |
+
+**Reader journey after login:** `/login?returnUrl=/my-books` → empty state is expected for new accounts until save-book exists.
+
+### US‑P‑11: Books by me (`/books-by-me`)
+
+| Item | Current state | Next story work |
+|------|---------------|-----------------|
+| Route + `authorGuard` | ✅ Wired via login `returnUrl` | — |
+| Nav visibility | ✅ `isAuthor()` from `profiles.is_author` | — |
+| Page shell | ✅ `books-by-me.page.ts` loads author books | — |
+| Empty state | ⚠️ Plain text + non-functional “Add new book” button (`books-by-me.page.html`) | Style per design system; wire button to US‑P‑12 add-book form (US‑A‑02) |
+| Book cards | ⚠️ Title + status only — no cover, Edit/Delete | Per acceptance criteria: cover placeholder, Edit, Delete actions |
+| Tests | ❌ No `books-by-me.page.spec.ts` | Add per US‑P‑11 spec |
+
+**Author journey after login:** Sign up with author checkbox or `?mode=signup` → `/login?returnUrl=/books-by-me` lands on stub dashboard.
+
+### Shared auth assumptions (no rework needed)
+
+- Session: `AuthService` signals (`session`, `profile`, `isAuthenticated`, `isAuthor`)
+- Sign-out: optimistic local clear — do not block UI on Supabase network
+- Guards: `authGuard` waits for `loading()` false before redirect
+- Email confirmation: if Supabase requires confirm, signup shows success message and returns to login mode
+
+### Suggested implementation order
+
+1. **US‑P‑10** — design-system empty state + book cards (unblocks Reader Journey stage 13)
+2. **US‑P‑11** — design-system empty state + book cards with Edit/Delete stubs
+3. **US‑P‑12** — wire “Add new book” (US‑P‑11 empty-state CTA)
+4. **US‑P‑15** — full nav cleanup (Library, Collections placeholders)
