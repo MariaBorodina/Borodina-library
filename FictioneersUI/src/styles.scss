@@ -518,6 +518,18 @@
     @apply flex flex-wrap justify-center gap-4;
   }
 
+  .search-results__count {
+    @apply mb-6 text-sm font-light text-muted;
+  }
+
+  .search-error {
+    @apply rounded-card border border-white/[0.06] bg-card-bg p-10 text-center;
+  }
+
+  .search-error__message {
+    @apply mb-8 text-[1.05rem] font-light text-muted;
+  }
+
   .realm-empty {
     @apply rounded-card border border-white/[0.06] bg-card-bg p-10 text-center;
   }
