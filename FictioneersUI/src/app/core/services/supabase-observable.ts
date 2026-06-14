@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-const QUERY_TIMEOUT_MS = 15_000;
+const QUERY_TIMEOUT_MS = 30_000;
 
 export interface SupabaseResult<T> {
   data: T | null;
