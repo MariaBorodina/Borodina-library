@@ -18,15 +18,33 @@
     <button class="btn btn-primary" type="submit">Search</button>
   </form>
 
-  @if (searched) {
-    @if (results.length === 0) {
-      <div class="search-empty" role="status">
-        <p class="search-empty__message">No books found. Try different keywords.</p>
-        <div class="search-empty__links">
-          <a routerLink="/realms" class="btn btn-secondary">Browse by Realm</a>
-          <a routerLink="/authors" class="btn btn-secondary">Authors</a>
-        </div>
+  @if (loading()) {
+    <div class="book-grid" aria-busy="true" aria-label="Searching books">
+      @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
+        <div class="book-card book-card--skeleton"></div>
+      }
+    </div>
+  } @else if (searched() && error()) {
+    <div class="search-error" role="alert">
+      <p class="search-error__message">Search is temporarily unavailable. Please try again.</p>
+      <button type="button" class="btn btn-secondary" (click)="retrySearch()">Retry</button>
+    </div>
+  } @else if (searched() && results().length === 0) {
+    <div class="search-empty" role="status">
+      <p class="search-empty__message">No books found. Try different keywords.</p>
+      <div class="search-empty__links">
+        <a routerLink="/realms" class="btn btn-secondary">Browse by Realm</a>
+        <a routerLink="/authors" class="btn btn-secondary">Authors</a>
       </div>
-    }
+    </div>
+  } @else if (searched() && results().length > 0) {
+    <p class="search-results__count">
+      {{ results().length }} {{ results().length === 1 ? 'result' : 'results' }} for “{{ lastQuery() }}”
+    </p>
+    <div class="book-grid">
+      @for (book of results(); track book.id) {
+        <app-book-card [book]="book" />
+      }
+    </div>
   }
 </section>
