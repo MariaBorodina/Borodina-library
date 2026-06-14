@@ -4,9 +4,7 @@
       <h1 class="page-title">Books by me</h1>
       <p class="section-subtitle">Manage your publications</p>
     </div>
-    @if (!loading() && !error()) {
-      <a routerLink="/books/new" class="btn btn-primary">Add new book</a>
-    }
+    <a routerLink="/books/new" class="btn btn-primary">Add new book</a>
   </div>
 
   @if (error()) {

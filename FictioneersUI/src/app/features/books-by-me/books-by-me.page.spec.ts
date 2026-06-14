@@ -120,6 +120,15 @@ describe('BooksByMePage', () => {
     expect(skeletons.length).toBe(6);
   });
 
+  it('should show Add new book button while books load', async () => {
+    TestBed.resetTestingModule();
+    await createPage({ delayBooks: true });
+
+    const addLink = fixture.nativeElement.querySelector('.section-header a.btn-primary');
+    expect(addLink?.textContent).toContain('Add new book');
+    expect(addLink?.getAttribute('href')).toContain('/books/new');
+  });
+
   it('should show FR-A-02 empty state when author has no books', async () => {
     TestBed.resetTestingModule();
     await createPage({ books: [] });
