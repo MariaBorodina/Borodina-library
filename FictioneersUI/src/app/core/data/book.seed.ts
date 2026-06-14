@@ -65,3 +65,20 @@ export function getSeedBooksByRealm(realmId: string): Book[] {
 export function getSeedBookById(id: string): Book | undefined {
   return SEED_BOOKS.find((book) => book.id === id);
 }
+
+export function searchSeedBooks(query: string, limit = 50): Book[] {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    return [];
+  }
+
+  return SEED_BOOKS.filter((book) => {
+    if (book.status !== 'published') {
+      return false;
+    }
+    const inTitle = book.title.toLowerCase().includes(q);
+    const inSynopsis = book.synopsis.toLowerCase().includes(q);
+    const inTags = book.tags.some((tag) => tag.toLowerCase().includes(q));
+    return inTitle || inSynopsis || inTags;
+  }).slice(0, limit);
+}
