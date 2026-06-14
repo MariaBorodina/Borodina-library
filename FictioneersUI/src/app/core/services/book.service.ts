@@ -61,6 +61,10 @@ export class BookService {
   }
 
   getBooksByAuthor(authorId: string): Observable<Book[]> {
+    if (!this.supabase.isConfigured) {
+      return of([] as Book[]);
+    }
+
     return from(
       this.supabase.requireClient()
         .from('books')

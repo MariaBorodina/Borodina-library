@@ -1,0 +1,18 @@
+<article class="author-book-card book-card">
+  @if (coverUrl(); as url) {
+    <img [src]="url" [alt]="book().title" class="book-cover" />
+  } @else {
+    <div class="book-cover book-cover--placeholder" [attr.aria-label]="book().title"></div>
+  }
+  <div class="book-info">
+    <span class="book-status" [class.book-status--draft]="book().status === 'draft'" [class.book-status--published]="book().status === 'published'">
+      {{ book().status }}
+    </span>
+    <h3 class="book-title">{{ book().title }}</h3>
+    <div class="author-book-card__actions">
+      <a [routerLink]="['/books', book().id, 'increments']" class="btn btn-secondary">Manage increments</a>
+      <a [routerLink]="['/books', book().id, 'edit']" class="btn btn-secondary">Edit</a>
+      <button type="button" class="btn btn-danger" (click)="onDelete($event)">Delete</button>
+    </div>
+  </div>
+</article>
