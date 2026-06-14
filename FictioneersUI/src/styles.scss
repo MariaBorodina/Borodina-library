@@ -141,6 +141,18 @@
     }
   }
 
+  .btn-danger {
+    @apply border-[1.5px] border-red-400/40 bg-red-500/10 text-red-300;
+
+    &:hover:not(:disabled) {
+      @apply border-red-400 bg-red-500/20 text-red-200;
+    }
+
+    &:disabled {
+      @apply cursor-not-allowed opacity-50;
+    }
+  }
+
   .section {
     @apply relative mx-auto max-w-[1400px] px-16 py-[120px] max-[1024px]:px-8 max-[768px]:px-6 max-[768px]:py-20;
   }
@@ -540,6 +552,78 @@
 
   .realm-empty__links {
     @apply flex flex-wrap justify-center gap-4;
+  }
+
+  .author-empty {
+    @apply rounded-card border border-white/[0.06] bg-card-bg p-10 text-center;
+  }
+
+  .author-empty__message {
+    @apply mb-8 text-[1.05rem] font-light text-muted;
+  }
+
+  .author-empty__links {
+    @apply flex flex-wrap justify-center gap-4;
+  }
+
+  .author-book-card {
+    @apply cursor-default;
+
+    &::before {
+      @apply hidden;
+    }
+
+    &:hover {
+      @apply translate-y-0 border-white/[0.06] shadow-none;
+    }
+
+    .book-info {
+      @apply p-5;
+    }
+  }
+
+  .author-book-card__actions {
+    @apply mt-4 flex flex-wrap gap-2;
+
+    .btn {
+      @apply px-4 py-2 text-[0.75rem];
+    }
+  }
+
+  .book-status {
+    @apply mb-2.5 inline-block font-sans text-[0.7rem] font-semibold uppercase tracking-[0.15em];
+  }
+
+  .book-status--draft {
+    @apply text-secondary;
+  }
+
+  .book-status--published {
+    @apply text-primary;
+  }
+
+  .alert {
+    @apply rounded-card border p-5;
+  }
+
+  .alert-error {
+    @apply mb-6 border-red-400/30 bg-red-500/10 text-red-200;
+  }
+
+  .confirm-dialog {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6;
+  }
+
+  .confirm-dialog__panel {
+    @apply w-full max-w-md rounded-card border border-white/[0.08] bg-card-bg p-8;
+  }
+
+  .confirm-dialog__message {
+    @apply mb-6 text-[1.05rem] font-light leading-[1.7] text-text;
+  }
+
+  .confirm-dialog__actions {
+    @apply flex flex-wrap justify-end gap-3;
   }
 
   .realm-select {

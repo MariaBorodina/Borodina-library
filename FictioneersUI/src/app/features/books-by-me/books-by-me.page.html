@@ -1,20 +1,56 @@
-<section class="mx-auto max-w-4xl px-4 py-12">
-  <h1 class="mb-6 text-2xl font-semibold">Books by me</h1>
+<section class="section">
+  <div class="section-header">
+    <div>
+      <h1 class="page-title">Books by me</h1>
+      <p class="section-subtitle">Manage your publications</p>
+    </div>
+    <a routerLink="/books/new" class="btn btn-primary">Add new book</a>
+  </div>
 
-  @if (loading()) {
-    <p>Loading your books…</p>
-  } @else if (myBooks().length === 0) {
-    <p>You haven't added any books yet. Click 'Add new book' to get started.</p>
-    <button type="button" class="mt-4 rounded bg-indigo-600 px-4 py-2 text-white">Add new book</button>
-  } @else {
-    <ul class="grid gap-4 sm:grid-cols-2">
-      @for (book of myBooks(); track book.id) {
-        <li class="rounded border p-4">
-          <h2 class="font-medium">{{ book.title }}</h2>
-          <p class="text-sm capitalize text-gray-500">{{ book.status }}</p>
-        </li>
+  @if (error()) {
+    <div class="alert alert-error" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="btn btn-secondary" (click)="loadBooks()">Retry</button>
+    </div>
+  } @else if (loading()) {
+    <div class="book-grid" aria-busy="true" aria-label="Loading your books">
+      @for (placeholder of [1, 2, 3, 4, 5, 6]; track placeholder) {
+        <div class="book-card book-card--skeleton"></div>
       }
-    </ul>
-    <button type="button" class="mt-6 rounded bg-indigo-600 px-4 py-2 text-white">Add new book</button>
+    </div>
+  } @else if (myBooks().length === 0) {
+    <div class="author-empty" role="status">
+      <p class="author-empty__message">
+        You haven't added any books yet. Click 'Add new book' to get started.
+      </p>
+      <div class="author-empty__links">
+        <a routerLink="/books/new" class="btn btn-primary">Add new book</a>
+      </div>
+    </div>
+  } @else {
+    <div class="book-grid">
+      @for (book of myBooks(); track book.id) {
+        <app-author-book-card [book]="book" (deleteBook)="requestDelete($event)" />
+      }
+    </div>
+  }
+
+  @if (deleteTarget()) {
+    <div class="confirm-dialog" role="dialog" aria-labelledby="delete-confirm-title" aria-modal="true">
+      <div class="confirm-dialog__panel">
+        <p id="delete-confirm-title" class="confirm-dialog__message">{{ deleteConfirmMessage }}</p>
+        @if (deleteError()) {
+          <p class="alert alert-error" role="alert">{{ deleteError() }}</p>
+        }
+        <div class="confirm-dialog__actions">
+          <button type="button" class="btn btn-secondary" [disabled]="deleting()" (click)="cancelDelete()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger" [disabled]="deleting()" (click)="executeDelete()">
+            {{ deleting() ? 'Deleting…' : 'Confirm delete' }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </section>

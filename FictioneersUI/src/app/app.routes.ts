@@ -17,8 +17,24 @@ export const routes: Routes = [
       import('./features/realm-detail/realm-detail.page').then((m) => m.RealmDetailPage),
   },
   {
+    path: 'books/new',
+    canActivate: [authorGuard],
+    loadComponent: () => import('./features/book-new/book-new.page').then((m) => m.BookNewPage),
+  },
+  {
     path: 'books/:id/read',
     loadComponent: () => import('./features/reading/reading.page').then((m) => m.ReadingPage),
+  },
+  {
+    path: 'books/:id/edit',
+    canActivate: [authorGuard],
+    loadComponent: () => import('./features/book-edit/book-edit.page').then((m) => m.BookEditPage),
+  },
+  {
+    path: 'books/:id/increments',
+    canActivate: [authorGuard],
+    loadComponent: () =>
+      import('./features/book-increments/book-increments.page').then((m) => m.BookIncrementsPage),
   },
   {
     path: 'books/:id',

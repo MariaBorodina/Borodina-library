@@ -61,20 +61,22 @@ export class BookService {
   }
 
   getBooksByAuthor(authorId: string): Observable<Book[]> {
-    return from(
-      this.supabase.requireClient()
+    if (!this.supabase.isConfigured) {
+      return of([] as Book[]);
+    }
+
+    return fromSupabaseQuery<Book[]>((signal) => {
+      const builder = this.supabase.requireClient()
         .from('books')
         .select('*')
         .eq('author_id', authorId)
-        .order('created_at', { ascending: false }),
-    ).pipe(
-      map(({ data, error }) => {
-        if (error) {
-          throw error;
-        }
-        return (data ?? []) as Book[];
-      }),
-    );
+        .order('created_at', { ascending: false });
+
+      return withAbortSignal(builder, signal).then(({ data, error }) => ({
+        data: (data ?? []) as Book[],
+        error,
+      }));
+    });
   }
 
   getMyBooks(authorId: string): Observable<Book[]> {
