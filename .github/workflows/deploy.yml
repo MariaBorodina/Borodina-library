@@ -1,0 +1,86 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    defaults:
+      run:
+        working-directory: FictioneersUI
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: FictioneersUI/package-lock.json
+
+      - name: Validate Supabase secrets
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ] || [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+            echo "::error::Add SUPABASE_URL and SUPABASE_ANON_KEY repository secrets before deploying."
+            exit 1
+          fi
+
+      - name: Configure production environment
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const content = [
+            'export const environment = {',
+            '  production: true,',
+            `  supabaseUrl: ${JSON.stringify(process.env.SUPABASE_URL)},`,
+            `  supabaseAnonKey: ${JSON.stringify(process.env.SUPABASE_ANON_KEY)},`,
+            '};',
+            '',
+          ].join('\n');
+          fs.writeFileSync('src/environments/environment.prod.ts', content);
+          NODE
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build -- --base-href /${{ github.event.repository.name }}/
+
+      - name: SPA fallback for client-side routing
+        run: cp dist/FictioneersUI/browser/index.html dist/FictioneersUI/browser/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: FictioneersUI/dist/FictioneersUI/browser
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
