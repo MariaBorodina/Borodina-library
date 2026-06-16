@@ -7,7 +7,7 @@
   >
     <option value="">Select a realm</option>
     @for (realm of realms(); track realm.id) {
-      <option [value]="realm.slug">{{ realm.name }}</option>
+      <option [value]="realm.id">{{ realm.name }}</option>
     }
   </select>
 </label>

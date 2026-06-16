@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "cors-cross-origin-misconfiguration": {
+      "source": "yaklang/hack-skills",
+      "sourceType": "github",
+      "skillPath": "skills/cors-cross-origin-misconfiguration/SKILL.md",
+      "computedHash": "24e79c866f75d7fab390196784efd95168fa91263cb07138224fc674e16a7c79"
+    }
+  }
+}

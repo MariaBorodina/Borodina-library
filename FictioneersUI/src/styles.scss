@@ -713,4 +713,69 @@
       @apply text-text;
     }
   }
+
+  .book-form-card {
+    @apply mx-auto max-w-[640px];
+  }
+
+  .book-form {
+    @apply flex flex-col gap-5;
+  }
+
+  .book-form__label {
+    @apply flex flex-col gap-2;
+  }
+
+  .book-form__field {
+    @apply flex flex-col gap-2;
+  }
+
+  .book-form__label-text {
+    @apply font-sans text-[0.85rem] font-medium uppercase tracking-[0.08em] text-muted;
+  }
+
+  .book-form__input,
+  .book-form__textarea {
+    @apply w-full rounded-card border border-white/[0.08] bg-bg px-5 py-3.5 font-sans text-base text-text outline-none transition-colors duration-300;
+
+    &:focus {
+      @apply border-primary/40;
+    }
+  }
+
+  .book-form__textarea {
+    @apply min-h-[120px] resize-y leading-relaxed;
+  }
+
+  .book-form__hint {
+    @apply text-[0.85rem] font-light text-muted;
+  }
+
+  .book-form__field-error {
+    @apply text-[0.85rem] text-red-300;
+  }
+
+  .book-form__cover-row {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .book-form__file-label {
+    @apply relative cursor-pointer;
+  }
+
+  .book-form__file-input {
+    @apply absolute h-0 w-0 overflow-hidden opacity-0;
+  }
+
+  .book-form__cover-name {
+    @apply text-[0.95rem] font-light text-muted;
+  }
+
+  .book-form__cover-preview {
+    @apply mt-2 max-w-[120px] rounded-card border border-white/[0.08];
+  }
+
+  .book-form__actions {
+    @apply mt-2 flex flex-wrap justify-end gap-3;
+  }
 }
