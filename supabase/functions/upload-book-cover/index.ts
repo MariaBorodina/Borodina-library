@@ -1,5 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import {
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+  S3ServiceException,
+} from "npm:@aws-sdk/client-s3@3.864.0";
 
 function buildCorsHeaders(req: Request): HeadersInit {
   const requestOrigin = req.headers.get("Origin");
@@ -8,11 +14,37 @@ function buildCorsHeaders(req: Request): HeadersInit {
   return {
     "Access-Control-Allow-Origin": requestOrigin ?? "*",
     "Access-Control-Allow-Headers":
-      requestHeaders ?? "authorization, x-client-info, apikey, content-type",
+       "authorization, x-client-info, apikey, content-type, accept, origin, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin, Access-Control-Request-Headers",
   };
+}
+
+const ALLOWED_COVER_TYPES = new Set(["image/jpeg", "image/png"]);
+const MAX_COVER_BYTES = 5_242_880;
+const COVER_PATH_RE = /^[^/]+\/[^/]+\/cover\.(jpg|jpeg|png)$/i;
+
+function getRequiredEnv(name: string): string {
+  const value = Deno.env.get(name)?.trim();
+  if (!value) {
+    throw new Error(`Missing required env var: ${name}`);
+  }
+  return value;
+}
+
+function resolvePublicBaseUrl(endpoint: string, bucket: string): string {
+  const configuredBase = Deno.env.get("YC_STORAGE_PUBLIC_BASE_URL")?.trim();
+  if (configuredBase) {
+    return configuredBase.replace(/\/+$/, "");
+  }
+
+  const normalized = endpoint.replace(/\/+$/, "");
+  if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+    return `${normalized}/${bucket}`;
+  }
+
+  return `https://${normalized}/${bucket}`;
 }
 
 Deno.serve(async (req: Request) => {
@@ -30,6 +62,22 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    
+  /*  const blob = await req.blob();
+return new Response(JSON.stringify({ message: "Байты дошли до сервера!", size: blob.size }), {
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});*/
+
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
+    const blob = new Blob([await file.arrayBuffer()], { type: file.type });
+    return new Response(JSON.stringify({ message: "Файл дошёл до сервера!", size: blob.size }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    
+    
+    
+    /*
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
@@ -80,6 +128,27 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (!ALLOWED_COVER_TYPES.has(contentType)) {
+      return new Response(JSON.stringify({ error: "Unsupported cover content type" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (bytes.byteLength > MAX_COVER_BYTES) {
+      return new Response(JSON.stringify({ error: "Cover file is too large" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!COVER_PATH_RE.test(path)) {
+      return new Response(JSON.stringify({ error: "Invalid cover path format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
@@ -104,24 +173,56 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { error: uploadError } = await supabase.storage.from("book-covers").upload(path, bytes, {
-      contentType,
-      upsert,
-      cacheControl: "3600",
+    const endpoint = getRequiredEnv("YC_STORAGE_ENDPOINT");
+    const region = getRequiredEnv("YC_STORAGE_REGION");
+    const accessKeyId = getRequiredEnv("YC_STORAGE_ACCESS_KEY_ID");
+    const secretAccessKey = getRequiredEnv("YC_STORAGE_SECRET_ACCESS_KEY");
+    const bucket = getRequiredEnv("YC_STORAGE_BUCKET");
+    const publicBaseUrl = resolvePublicBaseUrl(endpoint, bucket);
+
+    const s3Client = new S3Client({
+      endpoint: endpoint.startsWith("http://") || endpoint.startsWith("https://")
+        ? endpoint
+        : `https://${endpoint}`,
+      region,
+      credentials: { accessKeyId, secretAccessKey },
+      forcePathStyle: true,
     });
 
-    if (uploadError) {
-      const statusCode = Number(uploadError.statusCode);
-      const status = Number.isFinite(statusCode) && statusCode >= 400 ? statusCode : 400;
-      return new Response(JSON.stringify({ error: uploadError.message }), {
-        status,
+    if (!upsert) {
+      try {
+        await s3Client.send(new HeadObjectCommand({ Bucket: bucket, Key: path }));
+        return new Response(JSON.stringify({ error: "Cover already exists" }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (headError) {
+        if (!(headError instanceof S3ServiceException && headError.name === "NotFound")) {
+          throw headError;
+        }
+      }
+    }
+
+    try {
+      await s3Client.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: path,
+        Body: bytes,
+        ContentType: contentType,
+        CacheControl: "public, max-age=3600",
+        ACL: "public-read",
+      }));
+    } catch (uploadError) {
+      const message = uploadError instanceof Error ? uploadError.message : "Upload failed";
+      return new Response(JSON.stringify({ error: message }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ path }), {
+    return new Response(JSON.stringify({ path, publicUrl: `${publicBaseUrl}/${path}` }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }); */
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";
     return new Response(JSON.stringify({ error: message }), {

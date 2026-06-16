@@ -5,6 +5,7 @@ import { getSeedBookById, getSeedBooksByRealm } from '../data/book.seed';
 import { Book, BookStatus } from '../../shared/models/library.model';
 import { SupabaseService } from './supabase.service';
 import { fromSupabaseQuery, withAbortSignal } from './supabase-observable';
+import { environment } from '../../../environments/environment';
 
 export interface CreateBookInput {
   title: string;
@@ -163,14 +164,9 @@ export class BookService {
     const path = `${authorId}/${bookId}/cover.${ext}`;
 
     return from(
-      this.supabase.requireClient().storage.from('book-covers').upload(path, file, { upsert: true }),
+      this.uploadCoverViaEdgeFunction(path, file),
     ).pipe(
-      map(({ error }) => {
-        if (error) {
-          throw error;
-        }
-        return path;
-      }),
+      map((result) => result.publicUrl ?? result.path ?? path),
     );
   }
 
@@ -178,8 +174,69 @@ export class BookService {
     if (!path) {
       return null;
     }
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+
     const { data } = this.supabase.requireClient().storage.from('book-covers').getPublicUrl(path);
     return data.publicUrl;
+  }
+
+  private async uploadCoverViaEdgeFunction(
+    path: string,
+    file: File,
+  ): Promise<{ path?: string; publicUrl?: string }> {
+    const client = this.supabase.requireClient();
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError || !sessionData.session?.access_token) {
+      throw new Error('Not authenticated');
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 60_000);
+    const fileBlob = new Blob([await file.arrayBuffer()], { type: file.type });
+
+    // Вместо отправки сырых байт, упаковываем файл в FormData
+    const formData = new FormData();
+    formData.append('file', file); // Ключ, по которому Deno заберет файл
+
+    try {
+      const response = await fetch(
+        `${environment.supabaseUrl}/functions/v1/upload-book-cover?path=${encodeURIComponent(path)}&contentType=${encodeURIComponent(file.type)}&upsert=true`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${sessionData.session.access_token}`,
+            apikey: environment.supabaseAnonKey,
+           //'Content-Type': 'application/octet-stream',
+          },
+          body: formData,
+          signal: controller.signal,
+        },
+      );
+
+
+
+      const result = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        path?: string;
+        publicUrl?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(result.error || `Cover upload failed (${response.status})`);
+      }
+
+      return result;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        throw new Error('Cover upload timed out. Please try again.');
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
   }
 
   mapBookError(error: unknown): string {
