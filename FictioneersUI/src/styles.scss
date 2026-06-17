@@ -13,25 +13,95 @@
 
   body {
     @apply overflow-x-hidden bg-bg font-sans leading-relaxed text-text;
+
+    &.nav-open {
+      @apply overflow-hidden;
+    }
   }
 
   nav {
-    @apply relative z-[100] flex items-center justify-between px-16 py-8 max-[1024px]:px-8;
+    @apply relative z-[110] flex items-center justify-between gap-4 px-16 py-8 max-[1024px]:px-8 max-[768px]:px-6 max-[768px]:py-5;
   }
 
   footer {
-    @apply mx-auto mt-20 max-w-[1400px] border-t border-white/5 px-16 pb-10 pt-20 max-[1024px]:px-8;
+    @apply mx-auto mt-20 max-w-[1400px] border-t border-white/5 px-16 pb-10 pt-20 max-[1024px]:px-8 max-[768px]:px-6 max-[768px]:pt-14 max-[768px]:pb-8;
   }
 }
 
 @layer components {
   .logo {
-    @apply font-display text-[2rem] font-bold tracking-[0.08em] text-primary no-underline;
+    @apply font-display text-[2rem] font-bold tracking-[0.08em] text-primary no-underline max-[768px]:text-[1.6rem];
     text-shadow: 0 0 40px rgba(226, 201, 127, 0.3);
   }
 
+  .nav-toggle {
+    @apply relative z-[120] hidden h-11 w-11 shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-card border border-white/10 bg-card-bg p-2 max-[768px]:flex;
+
+    &:focus-visible {
+      @apply outline-2 outline-offset-2 outline-primary;
+    }
+  }
+
+  .nav-toggle__bar {
+    @apply block h-0.5 w-6 rounded-full bg-primary transition-all duration-300 ease-in-out;
+  }
+
+  .nav-toggle--open .nav-toggle__bar:nth-child(1) {
+    @apply translate-y-2 rotate-45;
+  }
+
+  .nav-toggle--open .nav-toggle__bar:nth-child(2) {
+    @apply opacity-0;
+  }
+
+  .nav-toggle--open .nav-toggle__bar:nth-child(3) {
+    @apply -translate-y-2 -rotate-45;
+  }
+
+  .nav-backdrop {
+    @apply fixed inset-0 z-[105] hidden border-0 bg-black/60 p-0 max-[768px]:block;
+  }
+
+  .nav-drawer {
+    @apply pointer-events-none fixed top-0 right-0 z-[115] hidden h-full w-[min(100%,320px)] translate-x-full flex-col border-l border-white/10 bg-bg/95 pt-24 opacity-0 backdrop-blur-xl transition-all duration-300 ease-in-out max-[768px]:flex;
+
+    &--open {
+      @apply pointer-events-auto translate-x-0 opacity-100;
+    }
+  }
+
+  .nav-drawer__links {
+    @apply flex list-none flex-col gap-1 overflow-y-auto px-6 pb-8;
+
+    a,
+    .nav-link-btn {
+      @apply block w-full py-3.5 text-left font-sans text-[0.95rem] font-medium uppercase tracking-[0.08em];
+    }
+
+    a {
+      @apply relative text-muted no-underline transition-colors duration-300;
+
+      &::after {
+        @apply hidden;
+      }
+
+      &:hover,
+      &.active {
+        @apply text-primary;
+      }
+    }
+
+    .nav-link-btn {
+      @apply text-muted;
+
+      &:hover {
+        @apply text-primary;
+      }
+    }
+  }
+
   .nav-links {
-    @apply flex list-none gap-12 max-[768px]:hidden;
+    @apply flex list-none gap-12 max-[1024px]:gap-8 max-[768px]:hidden;
   }
 
   .nav-links a {
@@ -61,7 +131,7 @@
   }
 
   .hero {
-    @apply relative flex min-h-[92vh] items-center overflow-hidden px-16 max-[1024px]:px-8 max-[768px]:min-h-[80vh] max-[768px]:py-10;
+    @apply relative flex min-h-[92vh] items-center overflow-hidden px-16 max-[1024px]:px-8 max-[768px]:min-h-[80vh] max-[768px]:px-6 max-[768px]:py-10;
   }
 
   .hero-bg {
@@ -118,11 +188,15 @@
   }
 
   .cta-group {
-    @apply flex flex-wrap gap-5;
+    @apply flex flex-wrap gap-5 max-[480px]:flex-col max-[480px]:gap-3;
+
+    .btn {
+      @apply max-[480px]:w-full max-[480px]:text-center;
+    }
   }
 
   .btn {
-    @apply relative cursor-pointer overflow-hidden rounded-pill border-0 px-9 py-[18px] font-sans text-[0.9rem] font-semibold tracking-[0.06em] no-underline transition-all duration-300 ease-in-out;
+    @apply relative cursor-pointer overflow-hidden rounded-pill border-0 px-9 py-[18px] font-sans text-[0.9rem] font-semibold tracking-[0.06em] no-underline transition-all duration-300 ease-in-out max-[768px]:px-7 max-[768px]:py-4;
   }
 
   .btn-primary {
@@ -162,7 +236,11 @@
   }
 
   .section-header {
-    @apply mb-[72px] flex flex-wrap items-end justify-between gap-6;
+    @apply mb-[72px] flex flex-wrap items-end justify-between gap-6 max-[768px]:mb-12 max-[768px]:items-start;
+
+    .btn {
+      @apply max-[480px]:w-full max-[480px]:text-center;
+    }
   }
 
   .section-title {
@@ -235,7 +313,7 @@
   }
 
   .book-grid {
-    @apply grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-9 max-[768px]:grid-cols-2 max-[768px]:gap-5;
+    @apply grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-9 max-[768px]:grid-cols-2 max-[768px]:gap-5 max-[480px]:grid-cols-1;
   }
 
   .book-card {
@@ -294,7 +372,7 @@
   }
 
   .book-info {
-    @apply p-7;
+    @apply p-7 max-[768px]:p-5;
   }
 
   .book-genre {
@@ -346,7 +424,7 @@
   }
 
   .footer-bottom {
-    @apply flex items-center justify-between border-t border-white/5 pt-10 text-[0.85rem] font-light text-muted;
+    @apply flex items-center justify-between gap-4 border-t border-white/5 pt-10 text-[0.85rem] font-light text-muted max-[768px]:flex-col max-[768px]:items-start max-[768px]:pt-8;
   }
 
   .stars {
@@ -503,11 +581,11 @@
   }
 
   .search-form {
-    @apply mb-12 flex max-w-[720px] flex-wrap gap-4;
+    @apply mb-12 flex max-w-[720px] flex-wrap gap-4 max-[480px]:flex-col;
   }
 
   .search-form__input {
-    @apply min-w-[240px] flex-1 rounded-pill border border-white/[0.08] bg-card-bg px-6 py-4 font-sans text-base text-text outline-none transition-colors duration-300;
+    @apply min-w-0 flex-1 rounded-pill border border-white/[0.08] bg-card-bg px-6 py-4 font-sans text-base text-text outline-none transition-colors duration-300 max-[480px]:w-full sm:min-w-[240px];
 
     &:focus {
       @apply border-primary/40;
@@ -776,6 +854,18 @@
   }
 
   .book-form__actions {
-    @apply mt-2 flex flex-wrap justify-end gap-3;
+    @apply mt-2 flex flex-wrap justify-end gap-3 max-[480px]:flex-col;
+
+    .btn {
+      @apply max-[480px]:w-full max-[480px]:text-center;
+    }
+  }
+
+  .library-empty {
+    @apply rounded-card border border-white/[0.06] bg-card-bg p-10 text-center max-[768px]:p-8;
+  }
+
+  .library-empty__message {
+    @apply mb-8 text-[1.05rem] font-light text-muted;
   }
 }

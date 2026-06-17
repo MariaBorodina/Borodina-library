@@ -1,19 +1,29 @@
-<section class="mx-auto max-w-4xl px-4 py-12">
-  <h1 class="mb-6 text-2xl font-semibold">My Books</h1>
+<section class="section">
+  <div class="section-header">
+    <div>
+      <h1 class="page-title">My <span>Books</span></h1>
+      <p class="section-subtitle">Your saved library, ready whenever you are.</p>
+    </div>
+  </div>
 
   @if (loading()) {
-    <p>Loading your library…</p>
-  } @else if (books().length === 0) {
-    <p>Your library is empty. Start browsing and save books you love!</p>
-    <a routerLink="/realms" class="mt-4 inline-block text-indigo-600 underline">Browse books</a>
-  } @else {
-    <ul class="grid gap-4 sm:grid-cols-2">
-      @for (book of books(); track book.id) {
-        <li class="rounded border p-4">
-          <h2 class="font-medium">{{ book.title }}</h2>
-          <p class="text-sm text-gray-600 line-clamp-2">{{ book.synopsis }}</p>
-        </li>
+    <div class="book-grid" aria-busy="true" aria-label="Loading your library">
+      @for (placeholder of [1, 2, 3, 4]; track placeholder) {
+        <div class="book-card book-card--skeleton"></div>
       }
-    </ul>
+    </div>
+  } @else if (books().length === 0) {
+    <div class="library-empty" role="status">
+      <p class="library-empty__message">
+        Your library is empty. Start browsing and save books you love!
+      </p>
+      <a routerLink="/realms" class="btn btn-primary">Browse books</a>
+    </div>
+  } @else {
+    <div class="book-grid">
+      @for (book of books(); track book.id) {
+        <app-book-card [book]="book" />
+      }
+    </div>
   }
 </section>
