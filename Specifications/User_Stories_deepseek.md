@@ -165,6 +165,27 @@ Then I see “Cannot delete book. Please remove all increments first.”
 And the book is not deleted
 ```
 
+#### US‑A‑08: Publish a draft book
+**I, as an author, want a “Publish” button on my draft books, for making them visible to readers in the public library.**
+
+**Acceptance Criteria**
+```gherkin
+Given I am authenticated as an author
+And I have a book with status “draft”
+When I view that book on the “Books by me” page (or its edit page)
+Then I see a “Publish” button
+
+When I click “Publish”
+Then the book’s status changes to “published”
+And the card or page reflects the new status
+And the “Publish” button is no longer shown for that book
+And the book becomes discoverable by readers (browse, search, realm, and author pages)
+
+Given I have a book with status “published”
+When I view that book on the “Books by me” page
+Then I do not see a “Publish” button
+```
+
 ---
 
 ### Cross‑Journey – Session & Reliability
@@ -225,7 +246,7 @@ Or (MVP) I see a warning “You will exit the book. Are you sure?”
 
 ### Author – Edit & Delete Operations
 
-#### US‑A‑08: Edit book info – save failure
+#### US‑A‑09: Edit book info – save failure
 **I, as an author, want to see an error message when saving edited book info fails, for knowing that my changes were not applied and I need to retry.**
 
 **Acceptance Criteria**
@@ -238,7 +259,7 @@ And my unsaved changes remain in the form
 And the book info is not updated
 ```
 
-#### US‑A‑09: Duplicate increment title
+#### US‑A‑10: Duplicate increment title
 **I, as an author, want to see a validation error when I try to upload an increment with a title that already exists, for avoiding duplicate chapter names.**
 
 **Acceptance Criteria**
@@ -249,7 +270,7 @@ Then I see “Increment title already exists. Use a unique title.”
 And the upload is prevented
 ```
 
-#### US‑A‑10: Cover upload fails (size/format)
+#### US‑A‑11: Cover upload fails (size/format)
 **I, as an author, want to see specific error messages for file size or format issues when uploading a book cover, for knowing exactly how to fix it.**
 
 **Acceptance Criteria**
@@ -262,7 +283,7 @@ When I upload a file that is not JPG or PNG
 Then I see “File must be JPG or PNG format.”
 ```
 
-#### US‑A‑11: Session expiration during reading progress save (reader)
+#### US‑A‑12: Session expiration during reading progress save (reader)
 **I, as a reader, want to be silently warned that my reading progress could not be saved when my session expires, for knowing that I should log in again to preserve my place.**
 
 **Acceptance Criteria**
@@ -312,7 +333,7 @@ And if I click “Undo”, the book reappears in my library
 
 ### Author – Advanced Error Handling
 
-#### US‑A‑12: Restore accidentally deleted increment (soft delete)
+#### US‑A‑13: Restore accidentally deleted increment (soft delete)
 **I, as an author, want to restore a recently deleted increment from a trash folder, for recovering from accidental deletions without re‑uploading.**
 
 **Acceptance Criteria**
@@ -323,7 +344,7 @@ And I see a “Restore” option for up to 7 days
 And after 7 days, the increment is permanently deleted
 ```
 
-#### US‑A‑13: Autosave draft for new book
+#### US‑A‑14: Autosave draft for new book
 **I, as an author, want my book form data to be autosaved as a draft every 30 seconds, for recovering from accidental page refreshes or session expiration.**
 
 **Acceptance Criteria**
@@ -335,7 +356,7 @@ Then I see a “Restore draft?” prompt
 And my previously entered data is restored
 ```
 
-#### US‑A‑14: Version history for increments
+#### US‑A‑15: Version history for increments
 **I, as an author, want to see previous versions of an increment when I replace a file, for rolling back to an older chapter if needed.**
 
 **Acceptance Criteria**
@@ -379,7 +400,7 @@ If both fail, I see “Server error. Please try again later.”
 
 | Priority | Reader Stories | Author Stories | Cross‑Journey Stories | Total |
 |----------|---------------|----------------|-----------------------|-------|
-| **Must have** | 5 (R‑01 to R‑05) | 7 (A‑01 to A‑07) | 2 (C‑01, C‑02) | **14** |
-| **Should have** | 2 (R‑06, R‑07) | 4 (A‑08 to A‑11) | 1 (C‑03) | **7** |
-| **Nice to have** | 1 (R‑08) | 3 (A‑12 to A‑14) | 2 (C‑04, C‑05) | **6** |
-| **Total** | 8 | 14 | 5 | **27** |
+| **Must have** | 5 (R‑01 to R‑05) | 8 (A‑01 to A‑08) | 2 (C‑01, C‑02) | **15** |
+| **Should have** | 2 (R‑06, R‑07) | 4 (A‑09 to A‑12) | 1 (C‑03) | **7** |
+| **Nice to have** | 1 (R‑08) | 3 (A‑13 to A‑15) | 2 (C‑04, C‑05) | **6** |
+| **Total** | 8 | 15 | 5 | **28** |

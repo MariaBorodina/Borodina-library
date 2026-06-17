@@ -12,7 +12,12 @@ export class AuthorBookCardComponent {
   private readonly bookService = inject(BookService);
 
   readonly book = input.required<Book>();
+  readonly publishingBookId = input<string | null>(null);
   readonly deleteBook = output<string>();
+  readonly publishBook = output<string>();
+
+  protected readonly isDraft = computed(() => this.book().status === 'draft');
+  protected readonly isPublishing = computed(() => this.publishingBookId() === this.book().id);
 
   protected readonly coverUrl = computed(() =>
     this.bookService.getCoverPublicUrl(this.book().cover_path, this.book().updated_at),
@@ -22,5 +27,11 @@ export class AuthorBookCardComponent {
     event.preventDefault();
     event.stopPropagation();
     this.deleteBook.emit(this.book().id);
+  }
+
+  protected onPublish(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.publishBook.emit(this.book().id);
   }
 }

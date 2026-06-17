@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of, switchMap } from 'rxjs';
@@ -42,11 +42,15 @@ export class BookEditPage implements OnDestroy {
   protected readonly loading = signal(true);
   protected readonly notFound = signal(false);
   protected readonly saving = signal(false);
+  protected readonly publishing = signal(false);
   protected readonly coverPreviewUrl = signal<string | null>(null);
   protected readonly supabaseNotConfiguredMessage = SUPABASE_NOT_CONFIGURED_MESSAGE;
 
   private readonly book = signal<Book | null>(null);
   private localCoverPreviewUrl: string | null = null;
+
+  protected readonly isDraft = computed(() => this.book()?.status === 'draft');
+  protected readonly bookStatus = computed(() => this.book()?.status ?? null);
 
   constructor() {
     this.loadBook();
@@ -95,6 +99,27 @@ export class BookEditPage implements OnDestroy {
     }
 
     this.executeSave(false);
+  }
+
+  protected publish(): void {
+    const currentBook = this.book();
+    if (!currentBook || currentBook.status !== 'draft' || this.publishing() || this.saving()) {
+      return;
+    }
+
+    this.formError.set('');
+    this.publishing.set(true);
+
+    this.books.publishBook(currentBook).subscribe({
+      next: (updated) => {
+        this.book.set(updated);
+        this.publishing.set(false);
+      },
+      error: (err) => {
+        this.publishing.set(false);
+        this.formError.set(this.books.mapBookError(err));
+      },
+    });
   }
 
   private loadBook(): void {

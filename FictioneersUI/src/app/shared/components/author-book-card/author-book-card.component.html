@@ -10,6 +10,16 @@
     </span>
     <h3 class="book-title">{{ book().title }}</h3>
     <div class="author-book-card__actions">
+      @if (isDraft()) {
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="isPublishing()"
+          (click)="onPublish($event)"
+        >
+          {{ isPublishing() ? 'Publishing…' : 'Publish' }}
+        </button>
+      }
       <a [routerLink]="['/books', book().id, 'increments']" class="btn btn-secondary">Manage increments</a>
       <a [routerLink]="['/books', book().id, 'edit']" class="btn btn-secondary">Edit</a>
       <button type="button" class="btn btn-danger" (click)="onDelete($event)">Delete</button>

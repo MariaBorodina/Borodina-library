@@ -34,6 +34,7 @@ describe('BookEditPage', () => {
 
   let getBookById: ReturnType<typeof vi.fn>;
   let updateBookWithVersion: ReturnType<typeof vi.fn>;
+  let publishBook: ReturnType<typeof vi.fn>;
   let uploadCover: ReturnType<typeof vi.fn>;
   let mapBookError: ReturnType<typeof vi.fn>;
   let getCoverPublicUrl: ReturnType<typeof vi.fn>;
@@ -43,6 +44,7 @@ describe('BookEditPage', () => {
     isConfigured = options.configured ?? true;
     getBookById = vi.fn(() => of(mockBook));
     updateBookWithVersion = vi.fn(() => of(mockBook));
+    publishBook = vi.fn(() => of({ ...mockBook, status: 'published' as const }));
     uploadCover = vi.fn(() => of('author-1/book-edit-1/cover.jpg'));
     mapBookError = vi.fn(() => 'Failed to save changes. Please try again.');
     getCoverPublicUrl = vi.fn(() => null);
@@ -73,6 +75,7 @@ describe('BookEditPage', () => {
           useValue: {
             getBookById,
             updateBookWithVersion,
+            publishBook,
             uploadCover,
             mapBookError,
             getCoverPublicUrl,
@@ -97,6 +100,12 @@ describe('BookEditPage', () => {
 
   function getSaveButton(): HTMLButtonElement {
     return fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+  }
+
+  function getPublishButton(): HTMLButtonElement | undefined {
+    return [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.trim() === 'Publish',
+    );
   }
 
   function fillValidForm(): void {
@@ -281,5 +290,22 @@ describe('BookEditPage', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain(SUPABASE_NOT_CONFIGURED_MESSAGE);
     expect(getSaveButton().disabled).toBe(true);
+    expect(getPublishButton()?.disabled).toBe(true);
+  });
+
+  it('shows Publish button for draft books and publishes on click', async () => {
+    await createPage();
+
+    expect(getPublishButton()).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('draft');
+
+    getPublishButton()?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(publishBook).toHaveBeenCalledWith(mockBook);
+    expect(fixture.nativeElement.textContent).toContain('published');
+    expect(getPublishButton()).toBeUndefined();
   });
 });
