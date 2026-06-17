@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { catchError, tap } from 'rxjs/operators';
 import { from, map, Observable, of } from 'rxjs';
 import { getSeedBookById, getSeedBooksByRealm } from '../data/book.seed';
 import { Book, BookStatus } from '../../shared/models/library.model';
+import { RealmService } from './realm.service';
 import { SupabaseService } from './supabase.service';
 import { fromSupabaseQuery, withAbortSignal } from './supabase-observable';
 import { environment } from '../../../environments/environment';
@@ -30,6 +31,7 @@ export interface UpdateBookInput {
 @Injectable({ providedIn: 'root' })
 export class BookService {
   private readonly booksByRealmCache = new Map<string, Book[]>();
+  private readonly realmService = inject(RealmService);
 
   constructor(private readonly supabase: SupabaseService) {}
 
@@ -122,6 +124,7 @@ export class BookService {
         }
         return data as Book;
       }),
+      tap(() => this.invalidateRealmBookCaches()),
     );
   }
 
@@ -146,6 +149,7 @@ export class BookService {
         }
         return data as Book;
       }),
+      tap(() => this.invalidateRealmBookCaches()),
     );
   }
 
@@ -160,7 +164,7 @@ export class BookService {
       cover_path: book.cover_path,
       cover_size_bytes: book.cover_size_bytes,
     }).pipe(
-      tap(() => this.booksByRealmCache.delete(book.realm_id)),
+      tap(() => this.invalidateRealmBookCaches()),
     );
   }
 
@@ -171,6 +175,7 @@ export class BookService {
           throw error;
         }
       }),
+      tap(() => this.invalidateRealmBookCaches()),
     );
   }
 
@@ -204,6 +209,11 @@ export class BookService {
 
     const separator = url.includes('?') ? '&' : '?';
     return `${url}${separator}v=${encodeURIComponent(String(cacheBust))}`;
+  }
+
+  private invalidateRealmBookCaches(): void {
+    this.booksByRealmCache.clear();
+    this.realmService.clearCache();
   }
 
   private async uploadCoverViaEdgeFunction(

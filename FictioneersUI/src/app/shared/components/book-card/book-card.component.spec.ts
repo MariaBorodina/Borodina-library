@@ -49,6 +49,20 @@ describe('BookCardComponent', () => {
     expect(title?.textContent).toContain('Ember of the Last Dragon');
   });
 
+  it('should render the full synopsis when it is 100 characters or fewer', () => {
+    const synopsis = fixture.nativeElement.querySelector('.book-synopsis');
+    expect(synopsis?.textContent).toBe('A tale of fire and legacy.');
+  });
+
+  it('should truncate synopsis to 100 characters', () => {
+    const longSynopsis = 'A'.repeat(120);
+    fixture.componentRef.setInput('book', { ...mockBook, synopsis: longSynopsis });
+    fixture.detectChanges();
+
+    const synopsis = fixture.nativeElement.querySelector('.book-synopsis');
+    expect(synopsis?.textContent).toBe(`${'A'.repeat(100)}…`);
+  });
+
   it('should link to the book info route', () => {
     const link = fixture.nativeElement.querySelector('a.book-card');
     expect(link?.getAttribute('href')).toContain('/books/book-1');

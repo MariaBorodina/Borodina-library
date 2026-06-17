@@ -8,3 +8,10 @@
 
 ## Backend
 - Supabase
+
+## External storage
+- Yandex Cloud Storage
+
+## CI/CD
+- GitHub Actions
+- GitHub Pages

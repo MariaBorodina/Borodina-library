@@ -383,6 +383,10 @@
     @apply mb-2.5 font-serif text-[1.15rem] font-semibold leading-[1.35] tracking-[0.02em] text-text;
   }
 
+  .book-synopsis {
+    @apply text-[0.85rem] font-light leading-[1.5] text-muted;
+  }
+
   .book-author {
     @apply text-[0.9rem] font-light italic text-muted;
   }
