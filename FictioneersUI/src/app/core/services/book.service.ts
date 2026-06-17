@@ -170,17 +170,25 @@ export class BookService {
     );
   }
 
-  getCoverPublicUrl(path: string | null): string | null {
+  getCoverPublicUrl(path: string | null, cacheBust?: string | number | null): string | null {
     if (!path) {
       return null;
     }
 
+    let url: string;
     if (path.startsWith('http://') || path.startsWith('https://')) {
-      return path;
+      url = path;
+    } else {
+      const { data } = this.supabase.requireClient().storage.from('book-covers').getPublicUrl(path);
+      url = data.publicUrl;
     }
 
-    const { data } = this.supabase.requireClient().storage.from('book-covers').getPublicUrl(path);
-    return data.publicUrl;
+    if (cacheBust == null || cacheBust === '') {
+      return url;
+    }
+
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}v=${encodeURIComponent(String(cacheBust))}`;
   }
 
   private async uploadCoverViaEdgeFunction(
@@ -197,10 +205,6 @@ export class BookService {
     const timeoutId = window.setTimeout(() => controller.abort(), 60_000);
     const fileBlob = new Blob([await file.arrayBuffer()], { type: file.type });
 
-    // Вместо отправки сырых байт, упаковываем файл в FormData
-    const formData = new FormData();
-    formData.append('file', file); // Ключ, по которому Deno заберет файл
-
     try {
       const response = await fetch(
         `${environment.supabaseUrl}/functions/v1/upload-book-cover?path=${encodeURIComponent(path)}&contentType=${encodeURIComponent(file.type)}&upsert=true`,
@@ -209,14 +213,12 @@ export class BookService {
           headers: {
             Authorization: `Bearer ${sessionData.session.access_token}`,
             apikey: environment.supabaseAnonKey,
-           //'Content-Type': 'application/octet-stream',
+            'Content-Type': 'application/octet-stream',
           },
-          body: formData,
+          body: fileBlob,
           signal: controller.signal,
         },
       );
-
-
 
       const result = (await response.json().catch(() => ({}))) as {
         error?: string;

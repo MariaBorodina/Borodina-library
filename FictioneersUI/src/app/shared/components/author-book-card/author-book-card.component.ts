@@ -15,7 +15,7 @@ export class AuthorBookCardComponent {
   readonly deleteBook = output<string>();
 
   protected readonly coverUrl = computed(() =>
-    this.bookService.getCoverPublicUrl(this.book().cover_path),
+    this.bookService.getCoverPublicUrl(this.book().cover_path, this.book().updated_at),
   );
 
   protected onDelete(event: Event): void {
