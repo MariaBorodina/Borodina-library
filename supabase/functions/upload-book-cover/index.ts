@@ -62,22 +62,6 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    
-  /*  const blob = await req.blob();
-return new Response(JSON.stringify({ message: "Байты дошли до сервера!", size: blob.size }), {
-  headers: { ...corsHeaders, "Content-Type": "application/json" },
-});*/
-
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const blob = new Blob([await file.arrayBuffer()], { type: file.type });
-    return new Response(JSON.stringify({ message: "Файл дошёл до сервера!", size: blob.size }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-    
-    
-    
-    /*
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
@@ -222,7 +206,7 @@ return new Response(JSON.stringify({ message: "Байты дошли до сер
 
     return new Response(JSON.stringify({ path, publicUrl: `${publicBaseUrl}/${path}` }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    }); */
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Upload failed";
     return new Response(JSON.stringify({ error: message }), {

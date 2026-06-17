@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  /** Replace with your Supabase Cloud project URL and anon key */
-  supabaseUrl: 'https://YOUR_PROJECT_REF.supabase.co',
-  supabaseAnonKey: 'YOUR_SUPABASE_ANON_KEY',
+  supabaseUrl: 'https://hprewyefppbdwlwnpcag.supabase.co',
+  supabaseAnonKey:
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwcmV3eWVmcHBiZHdsd25wY2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwODEyNDUsImV4cCI6MjA5NjY1NzI0NX0.LBMawRT78vr4JJNAs7pakvi9PV9NUDqzAPdYcRHVp6w',
 };

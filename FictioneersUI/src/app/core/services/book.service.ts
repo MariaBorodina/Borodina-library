@@ -197,10 +197,6 @@ export class BookService {
     const timeoutId = window.setTimeout(() => controller.abort(), 60_000);
     const fileBlob = new Blob([await file.arrayBuffer()], { type: file.type });
 
-    // Вместо отправки сырых байт, упаковываем файл в FormData
-    const formData = new FormData();
-    formData.append('file', file); // Ключ, по которому Deno заберет файл
-
     try {
       const response = await fetch(
         `${environment.supabaseUrl}/functions/v1/upload-book-cover?path=${encodeURIComponent(path)}&contentType=${encodeURIComponent(file.type)}&upsert=true`,
@@ -209,14 +205,12 @@ export class BookService {
           headers: {
             Authorization: `Bearer ${sessionData.session.access_token}`,
             apikey: environment.supabaseAnonKey,
-           //'Content-Type': 'application/octet-stream',
+            'Content-Type': 'application/octet-stream',
           },
-          body: formData,
+          body: fileBlob,
           signal: controller.signal,
         },
       );
-
-
 
       const result = (await response.json().catch(() => ({}))) as {
         error?: string;
