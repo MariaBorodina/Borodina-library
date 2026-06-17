@@ -34,7 +34,7 @@ export class BookInfoPage implements OnInit {
     if (!currentBook) {
       return null;
     }
-    return this.bookService.getCoverPublicUrl(currentBook.cover_path);
+    return this.bookService.getCoverPublicUrl(currentBook.cover_path, currentBook.updated_at);
   });
 
   ngOnInit(): void {

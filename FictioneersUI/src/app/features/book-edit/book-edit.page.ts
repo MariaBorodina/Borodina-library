@@ -236,7 +236,11 @@ export class BookEditPage implements OnDestroy {
   }
 
   private getExistingCoverUrl(): string | null {
-    return this.books.getCoverPublicUrl(this.book()?.cover_path ?? null);
+    const book = this.book();
+    if (!book?.cover_path) {
+      return null;
+    }
+    return this.books.getCoverPublicUrl(book.cover_path, book.updated_at);
   }
 
   private revokeLocalCoverPreview(): void {

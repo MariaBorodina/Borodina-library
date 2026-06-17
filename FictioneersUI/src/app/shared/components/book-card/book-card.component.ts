@@ -14,6 +14,6 @@ export class BookCardComponent {
   readonly book = input.required<Book>();
 
   protected readonly coverUrl = computed(() =>
-    this.bookService.getCoverPublicUrl(this.book().cover_path),
+    this.bookService.getCoverPublicUrl(this.book().cover_path, this.book().updated_at),
   );
 }

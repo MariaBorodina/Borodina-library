@@ -170,17 +170,25 @@ export class BookService {
     );
   }
 
-  getCoverPublicUrl(path: string | null): string | null {
+  getCoverPublicUrl(path: string | null, cacheBust?: string | number | null): string | null {
     if (!path) {
       return null;
     }
 
+    let url: string;
     if (path.startsWith('http://') || path.startsWith('https://')) {
-      return path;
+      url = path;
+    } else {
+      const { data } = this.supabase.requireClient().storage.from('book-covers').getPublicUrl(path);
+      url = data.publicUrl;
     }
 
-    const { data } = this.supabase.requireClient().storage.from('book-covers').getPublicUrl(path);
-    return data.publicUrl;
+    if (cacheBust == null || cacheBust === '') {
+      return url;
+    }
+
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}v=${encodeURIComponent(String(cacheBust))}`;
   }
 
   private async uploadCoverViaEdgeFunction(

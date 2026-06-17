@@ -192,6 +192,34 @@ describe('BookEditPage', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/books-by-me']);
   });
 
+  it('uploads a new cover and sends updated cover path on save', async () => {
+    await createPage();
+    fillValidForm();
+
+    const fileInput = fixture.nativeElement.querySelector('input[name="cover"]') as HTMLInputElement;
+    const pngFile = new File(['cover'], 'fresh-cover.png', { type: 'image/png' });
+    Object.defineProperty(fileInput, 'files', { value: [pngFile] });
+    fileInput.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    getSaveButton().click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(uploadCover).toHaveBeenCalledWith('author-1', 'book-edit-1', pngFile);
+    expect(updateBookWithVersion).toHaveBeenCalledWith('book-edit-1', {
+      title: 'Updated Tale',
+      synopsis: 'Updated synopsis.',
+      realm_id: '8',
+      tags: ['updated', 'fantasy'],
+      status: 'draft',
+      expected_updated_at: '2025-06-02T00:00:00Z',
+      cover_path: 'author-1/book-edit-1/cover.jpg',
+      cover_size_bytes: pngFile.size,
+      force_overwrite: false,
+    });
+  });
+
   it('shows mapped service error when update fails', async () => {
     await createPage();
     fillValidForm();
