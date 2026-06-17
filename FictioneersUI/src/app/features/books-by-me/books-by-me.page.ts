@@ -27,6 +27,8 @@ export class BooksByMePage implements OnInit {
   protected readonly deleteTarget = signal<string | null>(null);
   protected readonly deleteError = signal('');
   protected readonly deleting = signal(false);
+  protected readonly publishingBookId = signal<string | null>(null);
+  protected readonly publishError = signal('');
 
   protected readonly deleteConfirmMessage = DELETE_CONFIRM_MESSAGE;
 
@@ -95,6 +97,31 @@ export class BooksByMePage implements OnInit {
       error: (err) => {
         this.deleteError.set(this.books.mapBookError(err));
         this.deleting.set(false);
+      },
+    });
+  }
+
+  protected publishBook(bookId: string): void {
+    if (this.publishingBookId()) {
+      return;
+    }
+
+    const book = this.myBooks().find((item) => item.id === bookId);
+    if (!book || book.status !== 'draft') {
+      return;
+    }
+
+    this.publishingBookId.set(bookId);
+    this.publishError.set('');
+
+    this.books.publishBook(book).subscribe({
+      next: (updated) => {
+        this.myBooks.update((items) => items.map((item) => (item.id === bookId ? updated : item)));
+        this.publishingBookId.set(null);
+      },
+      error: (err) => {
+        this.publishError.set(this.books.mapBookError(err));
+        this.publishingBookId.set(null);
       },
     });
   }

@@ -41,6 +41,7 @@ describe('BooksByMePage', () => {
   ];
 
   let deleteBookIfEmpty: ReturnType<typeof vi.fn>;
+  let publishBook: ReturnType<typeof vi.fn>;
 
   async function createPage(options: {
     books?: Book[];
@@ -49,6 +50,7 @@ describe('BooksByMePage', () => {
     userId?: string | null;
   }): Promise<void> {
     deleteBookIfEmpty = vi.fn(() => of(undefined));
+    publishBook = vi.fn((book: Book) => of({ ...book, status: 'published' as const }));
 
     await TestBed.configureTestingModule({
       imports: [BooksByMePage],
@@ -73,6 +75,7 @@ describe('BooksByMePage', () => {
               return of(options.books ?? mockBooks);
             },
             deleteBookIfEmpty,
+            publishBook,
             mapBookError: (error: unknown) => {
               if (error instanceof Error) {
                 return error.message;
@@ -230,5 +233,61 @@ describe('BooksByMePage', () => {
       'Cannot delete book. Please remove all increments first.',
     );
     expect(fixture.nativeElement.querySelectorAll('app-author-book-card').length).toBe(2);
+  });
+
+  it('should publish a draft book and update its status', () => {
+    const publishButton = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.trim() === 'Publish',
+    );
+    publishButton?.click();
+    fixture.detectChanges();
+
+    expect(publishBook).toHaveBeenCalledWith(mockBooks[0]);
+    expect(fixture.nativeElement.textContent).not.toContain('draft');
+    expect(fixture.nativeElement.textContent).toContain('published');
+    expect(
+      [...fixture.nativeElement.querySelectorAll('button')].some((button: HTMLButtonElement) =>
+        button.textContent?.includes('Publish'),
+      ),
+    ).toBe(false);
+  });
+
+  it('should show error when publish fails', async () => {
+    TestBed.resetTestingModule();
+    publishBook = vi.fn(() => throwError(() => new Error('Failed to publish')));
+
+    await TestBed.configureTestingModule({
+      imports: [BooksByMePage],
+      providers: [
+        provideRouter([]),
+        {
+          provide: AuthService,
+          useValue: { user: () => mockUser },
+        },
+        {
+          provide: BookService,
+          useValue: {
+            getMyBooks: () => of(mockBooks),
+            deleteBookIfEmpty: vi.fn(() => of(undefined)),
+            publishBook,
+            mapBookError: (error: unknown) =>
+              error instanceof Error ? error.message : 'Failed to save changes. Please try again.',
+            getCoverPublicUrl: () => null,
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(BooksByMePage);
+    fixture.detectChanges();
+
+    const publishButton = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.trim() === 'Publish',
+    );
+    publishButton?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Failed to publish');
+    expect(fixture.nativeElement.textContent).toContain('draft');
   });
 });

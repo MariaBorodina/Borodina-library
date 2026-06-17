@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 import { Book } from '../../shared/models/library.model';
 import { BookService } from './book.service';
 import { SupabaseService } from './supabase.service';
@@ -113,5 +113,49 @@ describe('BookService', () => {
     await firstValueFrom(service.getBooksByRealm('realm-8'));
 
     expect(fromSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should publish a draft book and invalidate realm cache', async () => {
+    const draftBook: Book = {
+      ...mockBooks[0],
+      id: 'book-draft',
+      status: 'draft',
+      updated_at: '2025-06-02T00:00:00Z',
+    };
+    const publishedBook: Book = { ...draftBook, status: 'published', updated_at: '2025-06-03T00:00:00Z' };
+    const rpc = vi.fn(() => of({ data: publishedBook, error: null }));
+
+    const supabaseMock = createSupabaseMock();
+    const client = {
+      ...supabaseMock.client,
+      rpc,
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: SupabaseService,
+          useValue: {
+            ...supabaseMock,
+            requireClient: () => client,
+          },
+        },
+      ],
+    });
+    service = TestBed.inject(BookService);
+
+    await firstValueFrom(service.getBooksByRealm('realm-8'));
+    const result = await firstValueFrom(service.publishBook(draftBook));
+
+    expect(result.status).toBe('published');
+    expect(rpc).toHaveBeenCalledWith('update_book_with_version', expect.objectContaining({
+      p_book_id: 'book-draft',
+      p_status: 'published',
+    }));
+
+    const fromSpy = vi.spyOn(client, 'from');
+    await firstValueFrom(service.getBooksByRealm('realm-8'));
+    expect(fromSpy).toHaveBeenCalled();
   });
 });

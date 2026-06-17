@@ -58,4 +58,34 @@ describe('AuthorBookCardComponent', () => {
 
     expect(emitted).toEqual(['book-1']);
   });
+
+  it('should show Publish button for draft books', () => {
+    const publishButton = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.includes('Publish'),
+    );
+    expect(publishButton).toBeTruthy();
+  });
+
+  it('should emit publishBook when Publish is clicked', () => {
+    const emitted: string[] = [];
+    fixture.componentInstance.publishBook.subscribe((id) => emitted.push(id));
+
+    const publishButton = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.includes('Publish'),
+    );
+    publishButton?.click();
+
+    expect(emitted).toEqual(['book-1']);
+  });
+
+  it('should not show Publish button for published books', () => {
+    const publishedBook: Book = { ...mockBook, status: 'published' };
+    fixture.componentRef.setInput('book', publishedBook);
+    fixture.detectChanges();
+
+    const publishButton = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (button: HTMLButtonElement) => button.textContent?.includes('Publish'),
+    );
+    expect(publishButton).toBeUndefined();
+  });
 });

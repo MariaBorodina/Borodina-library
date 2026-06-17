@@ -149,6 +149,21 @@ export class BookService {
     );
   }
 
+  publishBook(book: Book): Observable<Book> {
+    return this.updateBookWithVersion(book.id, {
+      title: book.title,
+      synopsis: book.synopsis,
+      realm_id: book.realm_id,
+      tags: book.tags,
+      status: 'published',
+      expected_updated_at: book.updated_at,
+      cover_path: book.cover_path,
+      cover_size_bytes: book.cover_size_bytes,
+    }).pipe(
+      tap(() => this.booksByRealmCache.delete(book.realm_id)),
+    );
+  }
+
   deleteBookIfEmpty(bookId: string): Observable<void> {
     return from(this.supabase.requireClient().rpc('delete_book_if_empty', { p_book_id: bookId })).pipe(
       map(({ error }) => {

@@ -4,6 +4,15 @@
       <a routerLink="/books-by-me" class="realm-detail__back">← Books by me</a>
       <h1 class="page-title">Edit book</h1>
       <p class="section-subtitle">Update your draft and keep your readers engaged.</p>
+      @if (bookStatus(); as status) {
+        <span
+          class="book-status"
+          [class.book-status--draft]="status === 'draft'"
+          [class.book-status--published]="status === 'published'"
+        >
+          {{ status }}
+        </span>
+      }
     </div>
   </div>
 
@@ -98,10 +107,20 @@
 
         <div class="book-form__actions">
           <a routerLink="/books-by-me" class="btn btn-secondary">Cancel</a>
+          @if (isDraft()) {
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="publishing() || saving() || !isConfigured"
+              (click)="publish()"
+            >
+              {{ publishing() ? 'Publishing…' : 'Publish' }}
+            </button>
+          }
           <button
             type="submit"
             class="btn btn-primary"
-            [disabled]="saving() || !isConfigured"
+            [disabled]="saving() || publishing() || !isConfigured"
           >
             {{ saving() ? 'Saving…' : 'Save changes' }}
           </button>

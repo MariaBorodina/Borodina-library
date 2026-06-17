@@ -28,9 +28,19 @@
       </div>
     </div>
   } @else {
+    @if (publishError()) {
+      <div class="alert alert-error" role="alert">
+        <p>{{ publishError() }}</p>
+      </div>
+    }
     <div class="book-grid">
       @for (book of myBooks(); track book.id) {
-        <app-author-book-card [book]="book" (deleteBook)="requestDelete($event)" />
+        <app-author-book-card
+          [book]="book"
+          [publishingBookId]="publishingBookId()"
+          (deleteBook)="requestDelete($event)"
+          (publishBook)="publishBook($event)"
+        />
       }
     </div>
   }
