@@ -62,6 +62,10 @@ export function getSeedBooksByRealm(realmId: string): Book[] {
   return SEED_BOOKS.filter((book) => book.realm_id === realmId && book.status === 'published');
 }
 
+export function getSeedBookCountByRealm(realmId: string): number {
+  return getSeedBooksByRealm(realmId).length;
+}
+
 export function getSeedBookById(id: string): Book | undefined {
   return SEED_BOOKS.find((book) => book.id === id);
 }

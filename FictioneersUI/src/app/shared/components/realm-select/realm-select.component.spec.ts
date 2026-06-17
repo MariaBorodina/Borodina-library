@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { RealmService } from '../../../core/services/realm.service';
 import { RealmSelectComponent } from './realm-select.component';
 
@@ -42,5 +43,28 @@ describe('RealmSelectComponent', () => {
     fixture.detectChanges();
 
     expect(emitted).toEqual(['2']);
+  });
+
+  it('should select the provided value after realms load asynchronously', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [RealmSelectComponent],
+      providers: [
+        {
+          provide: RealmService,
+          useValue: { getRealms: () => of(mockRealms).pipe(delay(10)) },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RealmSelectComponent);
+    fixture.componentRef.setInput('value', '2');
+    fixture.detectChanges();
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(select.value).toBe('2');
   });
 });

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { from, map, Observable, of, tap } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { SEED_REALMS } from '../data/realm.seed';
+import { getSeedRealms } from '../data/realm.seed';
 import { Realm } from '../../shared/models/realm.model';
 import { RealmRow } from '../../shared/models/library.model';
 import { SupabaseService } from './supabase.service';
@@ -13,14 +13,18 @@ export class RealmService {
 
   constructor(private readonly supabase: SupabaseService) {}
 
+  clearCache(): void {
+    this.realmsCache = null;
+  }
+
   getRealms(): Observable<Realm[]> {
     if (this.realmsCache) {
       return of(this.realmsCache);
     }
 
     if (!this.supabase.isConfigured) {
-      this.realmsCache = SEED_REALMS;
-      return of(SEED_REALMS);
+      this.realmsCache = getSeedRealms();
+      return of(this.realmsCache);
     }
 
     return from(
@@ -39,15 +43,15 @@ export class RealmService {
         this.realmsCache = realms;
       }),
       catchError(() => {
-        this.realmsCache = SEED_REALMS;
-        return of(SEED_REALMS);
+        this.realmsCache = getSeedRealms();
+        return of(this.realmsCache);
       }),
     );
   }
 
   getRealmById(id: string): Observable<Realm | undefined> {
     if (!this.supabase.isConfigured) {
-      return of(SEED_REALMS.find((realm) => realm.id === id));
+      return of(getSeedRealms().find((realm) => realm.id === id));
     }
 
     return fromSupabaseQuery<Realm | undefined>((signal) => {
@@ -62,13 +66,13 @@ export class RealmService {
         error,
       }));
     }).pipe(
-      catchError(() => of(SEED_REALMS.find((realm) => realm.id === id))),
+      catchError(() => of(getSeedRealms().find((realm) => realm.id === id))),
     );
   }
 
   getRealmBySlug(slug: string): Observable<Realm | undefined> {
     if (!this.supabase.isConfigured) {
-      return of(SEED_REALMS.find((realm) => realm.slug === slug));
+      return of(getSeedRealms().find((realm) => realm.slug === slug));
     }
 
     return fromSupabaseQuery<Realm | undefined>((signal) => {

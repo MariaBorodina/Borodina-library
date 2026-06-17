@@ -120,6 +120,7 @@ describe('RealmService', () => {
     const realm = await firstValueFrom(service.getRealmById('8'));
     expect(realm?.name).toBe('Dragon Realms');
     expect(realm?.slug).toBe('dragon-realms');
+    expect(realm?.bookCount).toBe(2);
   });
 
   it('should return undefined for an unknown slug', async () => {

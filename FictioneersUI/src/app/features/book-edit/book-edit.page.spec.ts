@@ -137,6 +137,9 @@ describe('BookEditPage', () => {
     expect(titleInput.value).toBe('Existing Tale');
     expect(synopsisInput.value).toBe('Existing synopsis.');
     expect(tagsInput.value).toBe('fantasy, magic');
+
+    const realmSelect = el.querySelector('.realm-select__input') as HTMLSelectElement;
+    expect(realmSelect.value).toBe('8');
   });
 
   it('shows validation errors and does not call update when required fields are empty', async () => {

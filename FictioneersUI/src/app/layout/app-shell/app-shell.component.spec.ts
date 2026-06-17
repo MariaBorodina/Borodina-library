@@ -16,10 +16,34 @@ describe('AppShellComponent', () => {
   });
 
   it('should link Browse by Realm in the navigation', () => {
-    const navLink = [...fixture.nativeElement.querySelectorAll('nav a')].find(
+    const navLink = [...fixture.nativeElement.querySelectorAll('.nav-links a')].find(
       (el: HTMLAnchorElement) => el.textContent?.trim() === 'Browse by Realm',
     );
     expect(navLink?.getAttribute('href')).toContain('/realms');
+  });
+
+  it('should mirror navigation links in the mobile drawer', () => {
+    const desktopLabels = [...fixture.nativeElement.querySelectorAll('.nav-links a, .nav-links button')].map(
+      (el: HTMLElement) => el.textContent?.trim(),
+    );
+    const mobileLabels = [
+      ...fixture.nativeElement.querySelectorAll('.nav-drawer__links a, .nav-drawer__links button'),
+    ].map((el: HTMLElement) => el.textContent?.trim());
+
+    expect(mobileLabels).toEqual(desktopLabels);
+  });
+
+  it('should toggle the mobile navigation drawer', () => {
+    const toggle: HTMLButtonElement = fixture.nativeElement.querySelector('.nav-toggle');
+    const drawer: HTMLElement = fixture.nativeElement.querySelector('.nav-drawer');
+
+    expect(drawer.classList.contains('nav-drawer--open')).toBe(false);
+
+    toggle.click();
+    fixture.detectChanges();
+
+    expect(drawer.classList.contains('nav-drawer--open')).toBe(true);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
   });
 
   it('should link Browse by Realm in the footer', () => {

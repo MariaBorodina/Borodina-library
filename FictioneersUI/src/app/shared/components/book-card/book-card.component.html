@@ -6,5 +6,8 @@
   }
   <div class="book-info">
     <h3 class="book-title">{{ book().title }}</h3>
+    @if (truncatedSynopsis()) {
+      <p class="book-synopsis">{{ truncatedSynopsis() }}</p>
+    }
   </div>
 </a>

@@ -16,4 +16,12 @@ export class BookCardComponent {
   protected readonly coverUrl = computed(() =>
     this.bookService.getCoverPublicUrl(this.book().cover_path, this.book().updated_at),
   );
+
+  protected readonly truncatedSynopsis = computed(() => {
+    const synopsis = this.book().synopsis ?? '';
+    if (synopsis.length <= 100) {
+      return synopsis;
+    }
+    return `${synopsis.slice(0, 100)}…`;
+  });
 }

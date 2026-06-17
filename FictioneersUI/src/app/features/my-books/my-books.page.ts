@@ -1,12 +1,13 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { BookCardComponent } from '../../shared/components/book-card/book-card.component';
 import { Book } from '../../shared/models/library.model';
 import { LibraryService } from '../../core/services/library.service';
 
 @Component({
   selector: 'app-my-books',
-  imports: [RouterLink],
+  imports: [RouterLink, BookCardComponent],
   templateUrl: './my-books.page.html',
 })
 export class MyBooksPage implements OnInit {

@@ -1,26 +1,91 @@
 <div class="stars"></div>
 
 <nav>
-  <a routerLink="/" class="logo">Chronicles</a>
+  <a routerLink="/" class="logo" (click)="closeMenu()">Chronicles</a>
+
+  <button
+    type="button"
+    class="nav-toggle"
+    [class.nav-toggle--open]="menuOpen()"
+    [attr.aria-expanded]="menuOpen()"
+    aria-controls="mobile-nav"
+    aria-label="Toggle navigation menu"
+    (click)="toggleMenu()"
+  >
+    <span class="nav-toggle__bar" aria-hidden="true"></span>
+    <span class="nav-toggle__bar" aria-hidden="true"></span>
+    <span class="nav-toggle__bar" aria-hidden="true"></span>
+  </button>
+
   <ul class="nav-links">
-    <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a></li>
-    <li><a routerLink="/realms" routerLinkActive="active">Browse by Realm</a></li>
-    <li><a routerLink="/search" routerLinkActive="active">Search</a></li>
-    <li><a href="#">Library</a></li>
-    <li><a href="#">Collections</a></li>
-    <li><a routerLink="/authors" routerLinkActive="active">Authors</a></li>
-    <li><a href="#">Community</a></li>
-    @if (isAuthenticated()) {
-      <li><a routerLink="/my-books" routerLinkActive="active">My Books</a></li>
-      @if (isAuthor()) {
-        <li><a routerLink="/books-by-me" routerLinkActive="active">Books by me</a></li>
-      }
-      <li><button type="button" class="nav-link-btn" (click)="logout()">Log out</button></li>
-    } @else {
-      <li><a routerLink="/login" routerLinkActive="active">Log in</a></li>
+    @for (item of navItems(); track item.label) {
+      <li>
+        @switch (item.type) {
+          @case ('link') {
+            <a
+              [routerLink]="item.routerLink"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="item.exact ? { exact: true } : {}"
+            >
+              {{ item.label }}
+            </a>
+          }
+          @case ('placeholder') {
+            <a [href]="item.href">{{ item.label }}</a>
+          }
+          @case ('button') {
+            <button type="button" class="nav-link-btn" (click)="item.action()">
+              {{ item.label }}
+            </button>
+          }
+        }
+      </li>
     }
   </ul>
 </nav>
+
+@if (menuOpen()) {
+  <button
+    type="button"
+    class="nav-backdrop"
+    aria-label="Close navigation menu"
+    (click)="closeMenu()"
+  ></button>
+}
+
+<aside
+  id="mobile-nav"
+  class="nav-drawer"
+  [class.nav-drawer--open]="menuOpen()"
+  [attr.aria-hidden]="!menuOpen()"
+>
+  <ul class="nav-drawer__links">
+    @for (item of navItems(); track item.label) {
+      <li>
+        @switch (item.type) {
+          @case ('link') {
+            <a
+              [routerLink]="item.routerLink"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="item.exact ? { exact: true } : {}"
+              (click)="closeMenu()"
+            >
+              {{ item.label }}
+            </a>
+          }
+          @case ('placeholder') {
+            <a [href]="item.href" (click)="closeMenu()">{{ item.label }}</a>
+          }
+          @case ('button') {
+            <button type="button" class="nav-link-btn" (click)="item.action()">
+              {{ item.label }}
+            </button>
+          }
+        }
+      </li>
+    }
+  </ul>
+</aside>
 
 <router-outlet />
 

@@ -1,13 +1,19 @@
 <label class="realm-select">
   <span class="realm-select__label">{{ label() }}</span>
-  <select
-    class="realm-select__input"
-    [value]="value()"
-    (change)="onSelectionChange($event)"
-  >
-    <option value="">Select a realm</option>
-    @for (realm of realms(); track realm.id) {
-      <option [value]="realm.id">{{ realm.name }}</option>
-    }
-  </select>
+  @if (realms().length > 0) {
+    <select
+      class="realm-select__input"
+      [ngModel]="value()"
+      (ngModelChange)="valueChange.emit($event)"
+    >
+      <option value="">Select a realm</option>
+      @for (realm of realms(); track realm.id) {
+        <option [value]="realm.id">{{ realm.name }}</option>
+      }
+    </select>
+  } @else {
+    <select class="realm-select__input" disabled aria-busy="true">
+      <option value="">Loading realms…</option>
+    </select>
+  }
 </label>
