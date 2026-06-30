@@ -24,6 +24,23 @@ function buildCorsHeaders(req: Request): HeadersInit {
 const ALLOWED_COVER_TYPES = new Set(["image/jpeg", "image/png"]);
 const MAX_COVER_BYTES = 5_242_880;
 const COVER_PATH_RE = /^[^/]+\/[^/]+\/cover\.(jpg|jpeg|png)$/i;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function parseCoverPath(path: string): { authorId: string; bookId: string } | null {
+  const match = path.match(/^([^/]+)\/([^/]+)\/cover\.(jpg|jpeg|png)$/i);
+  if (!match) {
+    return null;
+  }
+
+  const authorId = match[1];
+  const bookId = match[2];
+  if (!UUID_RE.test(authorId) || !UUID_RE.test(bookId)) {
+    return null;
+  }
+
+  return { authorId, bookId };
+}
 
 function getRequiredEnv(name: string): string {
   const value = Deno.env.get(name)?.trim();
@@ -138,6 +155,42 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       { global: { headers: { Authorization: authHeader } } },
     );
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      return new Response(JSON.stringify({ error: "Not authenticated" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const coverPath = parseCoverPath(path);
+    if (!coverPath) {
+      return new Response(JSON.stringify({ error: "Invalid cover path format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (coverPath.authorId !== userData.user.id) {
+      return new Response(JSON.stringify({ error: "Not authorized" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: book, error: bookError } = await supabase
+      .from("books")
+      .select("id, author_id")
+      .eq("id", coverPath.bookId)
+      .maybeSingle();
+
+    if (bookError || !book || book.author_id !== userData.user.id) {
+      return new Response(JSON.stringify({ error: "Not authorized" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const { data: quotaOk, error: quotaError } = await supabase.rpc("check_storage_quota", {
       p_additional_bytes: bytes.byteLength,
