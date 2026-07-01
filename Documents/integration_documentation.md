@@ -39,6 +39,14 @@ write instruction for Yandex Cloud Storage integration into this application int
 файл \Documents\Yandex_Storage_instruction.md
 
 
+## Логирование
+### Планирование - Cursor in Plan mode
+Recommend logging instrument or instruments for my project, so that I can have: logging levels, centralized log storage with expiraton date, structured log format (JSON preferrably). Keep in mind that I have UI, DB\backend, and external storage (Yandex Cloud Storage). I want to able to perform analysis of complete set of logs in case of problems, and give my logs to AI agent to analyse too (preferably through it's own link like MCP).
+
+#### Result
+Курсор уточнил у меня, хочу ли я бесплатно (хочу) и скоько я хочу хранить логи (30 дней). По итогу рекомендовал использовать логирование от Axiom. Там доступны все запрошенные мной опции, включая родной MCP сервер, чтобы не носить логи для анализа руками.
+Файл с анализом и рекомендациями по логированию сохранен в \.cursor\plans\centralized_logging_stack_08ffe92e.plan.md
+
 
 
 
