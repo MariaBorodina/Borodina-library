@@ -8,6 +8,16 @@ Automated diff-based review found no uncommitted changes on the current branch, 
 
 The project has a solid foundation: RLS is enabled on all tables, auth uses PKCE, error messages avoid credential leakage, and sensitive RPCs check `auth.uid()`. Several issues need attention before production — especially the cover-upload edge function and profile column protections.
 
+## Overall posture
+
+| Area | Rating | Notes |
+|------|--------|-------|
+| Access control (RLS) | **Strong** | RLS on all tables; recent migrations hardened profiles and increment storage |
+| Auth | **Moderate** | PKCE + rate limits, but weak password policy and no email confirmation |
+| Injection / XSS | **Strong** | Parameterized queries; Angular auto-escaping; no dangerous DOM APIs |
+| Misconfiguration | **Moderate** | CORS reflection, missing CSP, auth config tuned for dev |
+| Monitoring | **Weak** | No security event logging or alerting visible |
+
 | Severity | Location | Finding |
 |----------|----------|---------|
 | **Critical** | `supabase/functions/upload-book-cover/index.ts:129` | **Missing ownership check on upload path.** Any authenticated user can upload/overwrite a cover at `{anyAuthorId}/{anyBookId}/cover.*`. The function validates JWT and path format but never verifies the path's `authorId` matches `auth.uid()` or that the book belongs to that author. Uploads go directly to S3, bypassing Supabase Storage RLS. |
