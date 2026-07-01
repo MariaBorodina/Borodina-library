@@ -114,9 +114,20 @@ export class IncrementService {
     );
   }
 
-  getIncrementPublicUrl(path: string): string {
-    const { data } = this.supabase.requireClient().storage.from('book-increments').getPublicUrl(path);
-    return data.publicUrl;
+  /** Time-limited download URL; book-increments is a private bucket (RLS-enforced). */
+  getIncrementDownloadUrl(path: string, expiresInSeconds = 3600): Observable<string> {
+    return from(
+      this.supabase.requireClient().storage
+        .from('book-increments')
+        .createSignedUrl(path, expiresInSeconds),
+    ).pipe(
+      map(({ data, error }) => {
+        if (error || !data?.signedUrl) {
+          throw error ?? new Error('Failed to create download URL');
+        }
+        return data.signedUrl;
+      }),
+    );
   }
 
   mapIncrementError(error: unknown): string {
